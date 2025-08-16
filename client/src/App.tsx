@@ -8,12 +8,13 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import { SidebarProvider } from './components/ui/sidebar'
 import AppSideBar from './components/app-sidebar'
+import Footer from './components/footer'
 
 function App() {
 
   return (
     <SidebarProvider>
-    <div className='w-full'>
+    <div className='w-full flex flex-col'>
       <AppSideBar />
       <Navbar />
       <Routes>
@@ -23,6 +24,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
+      <Footer />
     </div>
     </SidebarProvider>
   )

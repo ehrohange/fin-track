@@ -35,7 +35,7 @@ const Home = () => {
       <section
         id="landing"
         className="w-full flex flex-col min-h-[calc(100vh-68px)] py-10 lg:min-h-0 lg:py-26 gap-4 items-center justify-center
-        lg:flex-row xl:gap-0"
+        lg:flex-row lg:justify-between xl:gap-0"
       >
         <div className="flex flex-col items-center gap-2 lg:items-start">
           <div className="flex items-center justify-center text-center flex-col gap-0 uppercase text-4xl md:text-5xl font-bold lg:text-left lg:items-start xl:text-6xl ">
@@ -67,7 +67,7 @@ const Home = () => {
         id="id"
         className="w-full py-10 lg:py-26 flex flex-col gap-10 items-center justify-center"
       >
-        <div className="text-center w-full">
+        <div className="text-center w-full lg:text-left">
           <h1 className="text-2xl md:text-4xl font-doto uppercase font-bold">
             Discover What FinTrack Can Do for You
           </h1>
@@ -79,9 +79,9 @@ const Home = () => {
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 items-stretch">
           {homeFeatureCards.map((item, index) => (
             <Link to="/login" key={index} className="h-full">
-              <Card className="group border-0 space-y-[-1rem] !p-0 overflow-clip h-full flex flex-col">
+              <Card className="group space-y-[-1rem] !p-0 overflow-clip h-full flex flex-col">
                 <CardHeader className="flex justify-between gap-2 pt-6">
-                  <CardTitle className="text-2xl md:text-3xl">{item.title}</CardTitle>
+                  <CardTitle className="text-2xl md:text-3xl xl:text-4xl mb-4">{item.title}</CardTitle>
                   <ArrowUpRight className="w-10 h-10 flex-shrink-0 group-hover:text-accent" />
                 </CardHeader>
                 <CardDescription className="px-6 mb-6 md:text-lg">{item.desc}</CardDescription>
@@ -91,7 +91,7 @@ const Home = () => {
                   <img
                     className="relative w-full h-auto"
                     src={item.imgsrc}
-                    alt=""
+                    alt={item.title}
                   />
                 </CardContent>
               </Card>

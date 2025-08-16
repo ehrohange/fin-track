@@ -1,8 +1,22 @@
+import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
-const footer = () => {
+const Footer = () => {
   return (
-    <div>footer</div>
-  )
-}
+    <div className="w-full bg-card">
+      <div className="max-w-6xl flex items-center justify-between mx-auto py-20">
+        <Link to="/" className="w-fit gap-1">
+          <Button variant={"ghost"} className="ml-[-20px] md:ml-0">
+            <span className="logo !bg-accent"></span>
+            <h1 className="text-xl font-doto uppercase text-white font-bold">
+              FinTrack
+            </h1>
+            <span className="logo rotate-180 ml-[-2px] !bg-accent"></span>
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+};
 
-export default footer
+export default Footer;
