@@ -45,8 +45,8 @@ const SignUp = () => {
               <Input type="password" id="confirmPassword" placeholder="Password" />
             </div>
           </CardContent>
-          <CardAction className="w-full px-5 flex justify-end">
-            <Button className="w-full max-w-1/2">Sign Up</Button>
+          <CardAction className="w-full px-5">
+            <Button className="w-full">Sign Up</Button>
           </CardAction>
         </Card>
         <div className="relative w-full max-w-[480px] xl:max-w-[580px]">

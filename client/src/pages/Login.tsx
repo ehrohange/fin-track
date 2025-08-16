@@ -39,8 +39,9 @@ const Login = () => {
               <Input type="password" id="password" placeholder="Password" />
             </div>
           </CardContent>
-          <CardAction className="w-full px-5 flex justify-end">
-            <Button className="w-full max-w-1/2">Login</Button>
+          <CardAction className="w-full px-5 grid gap-4">
+            <Button className="w-full">Login</Button>
+            <Button className="w-full" variant={"outline"}>Continue with Google</Button>
           </CardAction>
         </Card>
         <div className="relative w-full max-w-[480px] xl:max-w-[580px]">
