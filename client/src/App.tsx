@@ -13,7 +13,7 @@ import Footer from './components/footer'
 function App() {
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
     <div className='w-full flex flex-col'>
       <AppSideBar />
       <Navbar />
