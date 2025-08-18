@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Login = () => {
@@ -40,7 +41,7 @@ const Login = () => {
             </div>
           </CardContent>
           <CardAction className="w-full px-5 grid gap-4">
-            <Button className="w-full">Login</Button>
+            <Button className="w-full"><LogIn /> Login</Button>
             <Button className="w-full" variant={"outline"}>Continue with Google</Button>
           </CardAction>
         </Card>

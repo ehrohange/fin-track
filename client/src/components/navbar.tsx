@@ -10,8 +10,10 @@ import {
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import { NavigationMenuContent } from "@radix-ui/react-navigation-menu";
-import { LogIn, LogOut, PlusCircle } from "lucide-react";
+import { ChevronRight, LogIn, LogOut, PlusCircle } from "lucide-react";
 import { useState } from "react";
+import UpdateProfile from "./update-profile";
+import UpdatePassword from "./update-password";
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(true);
@@ -65,20 +67,23 @@ const Navbar = () => {
                     </p>
                   </div>
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="absolute top-full right-0 mt-2 w-[200px] rounded-md bg-popover shadow-lg p-2">
+                <NavigationMenuContent className="z-50 absolute top-full right-0 mt-2 w-[200px] rounded-md bg-popover shadow-lg p-2">
                   <ul className="grid gap-2">
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link to={"/profile"} className="text-center">Edit Profile</Link>
-                      </NavigationMenuLink>
+                      <UpdateProfile />
+                    </li>
+                    <li>
+                      <UpdatePassword />
                     </li>
                     <li>
                       <Button
                         variant={"ghost"}
-                        className="w-full text-destructive bg-none border-destructive hover:!bg-destructive/10 hover:text-destructive hover:border-2"
+                        className="w-full text-destructive bg-none border-destructive hover:!bg-destructive/10 hover:text-destructive hover:border-2
+                        flex justify-between items-center"
                       >
                         <LogOut />
                         <span>Logout</span>
+                        <ChevronRight />
                       </Button>
                     </li>
                   </ul>

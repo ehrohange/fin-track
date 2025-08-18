@@ -76,15 +76,19 @@ const Home = () => {
             stress-free.
           </h3>
         </div>
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 items-stretch">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 items-stretch">
           {homeFeatureCards.map((item, index) => (
             <Link to="/login" key={index} className="h-full">
               <Card className="group space-y-[-1rem] !p-0 overflow-clip h-full flex flex-col">
                 <CardHeader className="flex justify-between gap-2 pt-6">
-                  <CardTitle className="text-2xl md:text-3xl xl:text-4xl mb-4">{item.title}</CardTitle>
+                  <CardTitle className="text-2xl md:text-3xl xl:text-4xl mb-4">
+                    {item.title}
+                  </CardTitle>
                   <ArrowUpRight className="w-10 h-10 flex-shrink-0 group-hover:text-accent" />
                 </CardHeader>
-                <CardDescription className="px-6 mb-6 md:text-lg">{item.desc}</CardDescription>
+                <CardDescription className="px-6 mb-6 md:text-lg">
+                  {item.desc}
+                </CardDescription>
 
                 {/* This will stick the image to the bottom of the card */}
                 <CardContent className="!px-0 mt-auto">

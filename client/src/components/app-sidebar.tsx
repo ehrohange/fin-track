@@ -19,6 +19,14 @@ import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./ui/accordion";
+import UpdateProfile from "./update-profile";
+import UpdatePassword from "./update-password";
 
 const AppSideBar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(true);
@@ -28,38 +36,51 @@ const AppSideBar = () => {
       <SidebarHeader>
         <SidebarGroup>
           <header className="w-full flex items-center justify-between">
-            <h1 className="text-xl font-doto uppercase text-white font-bold">
-              FinTrack
-            </h1>
+            <Link to={"/"}>
+              <h1 className="text-xl font-doto uppercase text-white font-bold">
+                FinTrack
+              </h1>
+            </Link>
             <SidebarTrigger />
           </header>
         </SidebarGroup>
         {isLoggedIn ? (
           <>
-            <SidebarGroup className="hover:bg-primary/10 rounded-sm pt-0">
+            <SidebarGroup className="pt-0">
               <SidebarGroupLabel className="p-0 mb-2">User</SidebarGroupLabel>
               <SidebarGroupContent>
-                <Link to={"/profile"} className="flex items-start gap-2">
-                  <Avatar className="size-10">
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col gap-0 pr-4 min-w-0 mt-[-4px]">
-                    <h1 className="font-medium truncate">
-                      Jorge Angelo M. Pangilinan
-                    </h1>
-                    <p className="text-secondary truncate text-xs">
-                      jorgeangelopangilinan@gmail.com
-                    </p>
-                    <div className="w-full flex items-center justify-between text-secondary mt-2">
-                      <span className="text-xs">Edit Profile</span>
-                      <ChevronRight className="size-4" />
-                    </div>
-                  </div>
-                </Link>
+                <Accordion
+                  type="single"
+                  collapsible
+                  content="w-full"
+                  className="my-[-20px]"
+                >
+                  <AccordionItem value="profile">
+                    <AccordionTrigger className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-10">
+                          <AvatarImage
+                            src="https://github.com/shadcn.png"
+                            alt="@shadcn"
+                          />
+                          <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col gap-0 pr-4 w-[180px] mt-[-4px]">
+                          <h1 className="font-medium truncate">
+                            Jorge Angelo M. Pangilinan
+                          </h1>
+                          <p className="text-secondary truncate text-xs">
+                            jorgeangelopangilinan@gmail.com
+                          </p>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="mt-1 space-y-3">
+                      <UpdateProfile />
+                      <UpdatePassword />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>

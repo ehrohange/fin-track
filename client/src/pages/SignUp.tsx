@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { LogIn } from "lucide-react"
 import { Link } from "react-router-dom"
 
 const SignUp = () => {
@@ -46,7 +47,7 @@ const SignUp = () => {
             </div>
           </CardContent>
           <CardAction className="w-full px-5">
-            <Button className="w-full">Sign Up</Button>
+            <Button className="w-full"><LogIn /> Sign Up</Button>
           </CardAction>
         </Card>
         <div className="relative w-full max-w-[480px] xl:max-w-[580px]">
