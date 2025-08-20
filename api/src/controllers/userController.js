@@ -8,7 +8,7 @@ export const createUser = async (req, res, next) => {
     if ((!email | !firstName, !lastName, !password)) next(errorHandler(400, "All fields are required."));
 
     const existing = await User.findOne({ email });
-    if (existing) next(errorHandler(409, "User already exists."));
+    if (existing) next(errorHandler(409, "Account with that email already exists."));
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

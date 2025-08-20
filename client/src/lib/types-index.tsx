@@ -3,3 +3,15 @@ export interface HomeFeatureCardProps {
     desc: string;
     imgsrc: string;
 }
+
+export interface SignUpFormType {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+}
+
+export interface ToastContentType {
+    icon: "success" | "warning" | "error" | "informative";
+    message: string;
+}

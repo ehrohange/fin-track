@@ -8,13 +8,18 @@ import Profile from "./pages/Profile";
 import { SidebarProvider } from "./components/ui/sidebar";
 import AppSideBar from "./components/app-sidebar";
 import Footer from "./components/footer";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="relative w-full flex flex-col">
+        <Toaster position="bottom-center" theme="light" />
         {/* Background for extra-large screens */}
-        <img src="/bg.webp" className="hidden 2xl:block fixed top-0 left-0 w-full z-[-1] object-contain opacity-30" />
+        <img
+          src="/bg.webp"
+          className="hidden 2xl:block fixed top-0 left-0 w-full z-[-1] object-contain opacity-30"
+        />
         <AppSideBar />
         <Navbar />
         <Routes>
