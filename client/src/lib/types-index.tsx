@@ -11,6 +11,11 @@ export interface SignUpFormType {
     password: string;
 }
 
+export interface LoginFormType {
+    email: string;
+    password: string;
+}
+
 export interface ToastContentType {
     icon: "success" | "warning" | "error" | "informative";
     message: string;

@@ -10,13 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { SignUpFormType } from "@/lib/types-index";
 import { Loader2, LogIn } from "lucide-react";
-import { useState, type ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../lib/axios";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
 
 const SignUp = () => {
+  const signIn = useSignIn();
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState<SignUpFormType>({
     email: "",
     firstName: "",
@@ -33,7 +38,8 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     try {
       console.log("Clicked!");
       setSubmitting(true);
@@ -57,16 +63,33 @@ const SignUp = () => {
         toast(
           <ToastContent icon="success" message="Signed up successfully!" />
         );
-        setSubmitting(false);
-        setFormData({
-          email: "",
-          firstName: "",
-          lastName: "",
-          password: "",
-        });
-        setConfirmPassword("");
+        const loginRes = await api.post("/auth/login", formData);
+        if (loginRes.status === 200) {
+          const data = loginRes.data;
+
+          const success = await signIn({
+            auth: {
+              token: data.access_token,
+              type: "Bearer",
+            },
+          });
+
+          if (success) {
+            toast(
+              <ToastContent icon="success" message="Logged in successfully!" />
+            );
+            navigate("/dashboard");
+          }
+          setFormData({
+            email: "",
+            firstName: "",
+            lastName: "",
+            password: "",
+          });
+          setConfirmPassword("");
+          setSubmitting(false);
+        }
       }
-      setSubmitting(false);
       return;
     } catch (error: any) {
       if (error.response?.status) {
@@ -113,81 +136,79 @@ const SignUp = () => {
               </Link>
             </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-5">
-            <div className="grid w-full items-center gap-3">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                type="email"
-                id="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid w-full items-center gap-3">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                type="text"
-                id="firstName"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid w-full items-center gap-3">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                type="text"
-                id="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid w-full items-center gap-3">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                id="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid w-full items-center gap-3">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                type="password"
-                id="confirmPassword"
-                placeholder="Password"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardAction className="w-full px-5">
-            <Button
-              className="w-full"
-              disabled={submitting}
-              onClick={handleSignUp}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="animate-spin" /> Signing up...
-                </>
-              ) : (
-                <>
-                  <LogIn />
-                  Sign up
-                </>
-              )}
-            </Button>
-          </CardAction>
+          <form className="space-y-5" onSubmit={handleSignUp}>
+            <CardContent className="grid grid-cols-1 gap-5">
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  type="text"
+                  id="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  type="text"
+                  id="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  type="password"
+                  id="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  type="password"
+                  id="confirmPassword"
+                  placeholder="Password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  required
+                />
+              </div>
+            </CardContent>
+            <CardAction className="w-full px-5">
+              <Button className="w-full" disabled={submitting} type="submit">
+                {submitting ? (
+                  <>
+                    <Loader2 className="animate-spin" /> Signing up...
+                  </>
+                ) : (
+                  <>
+                    <LogIn />
+                    Sign up
+                  </>
+                )}
+              </Button>
+            </CardAction>
+          </form>
         </Card>
         <div className="relative w-full max-w-[480px] xl:max-w-[580px]">
           <img

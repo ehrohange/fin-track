@@ -7,7 +7,7 @@ import { errorHandler } from "../utils/error.js";
 dotenv.config();
 
 export const authLogin = async (req, res, next) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -16,14 +16,11 @@ export const authLogin = async (req, res, next) => {
 
     const validPassword = await bcrypt.compare(password, user.password);
 
-    if (!validPassword) next(errorHandler(400, "Invalid password."))
+    if (!validPassword) next(errorHandler(400, "Invalid password."));
 
-    const payload = {
-      id: user._id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
+    const { password: hashedPassword, ...rest } = user._doc;
+
+    const payload = rest;
 
     const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "4h",
@@ -33,4 +30,4 @@ export const authLogin = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
