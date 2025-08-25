@@ -12,11 +12,11 @@ export const authLogin = async (req, res, next) => {
   try {
     const user = await User.findOne({ email });
 
-    if (!user) next(errorHandler(404, "User does not exist."));
+    if (!user) return next(errorHandler(404, "User does not exist."));
 
     const validPassword = await bcrypt.compare(password, user.password);
 
-    if (!validPassword) next(errorHandler(400, "Invalid password."));
+    if (!validPassword) return next(errorHandler(401, "Invalid password."));
 
     const { password: hashedPassword, ...rest } = user._doc;
 

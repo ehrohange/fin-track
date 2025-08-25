@@ -16,8 +16,13 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { loginStart, loginSuccess, loginFailure } from "../redux/user/userSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
+
   const signIn = useSignIn();
 
   const navigate = useNavigate();
@@ -35,15 +40,17 @@ const Login = () => {
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      console.log("Clicked!");
       setSubmitting(true);
       if (!formData.email.trim() || !formData.password.trim()) {
         toast(<ToastContent icon="error" message="All fields are required!" />);
         setSubmitting(false);
         return;
       }
+
+      dispatch(loginStart());
       const res = await api.post("/auth/login", formData);
-      if (res.status === 200) {
+
+      if (res.status === 200 && res.data.access_token) {
         const data = res.data;
 
         const success = signIn({
@@ -54,46 +61,31 @@ const Login = () => {
         });
 
         if (success) {
+          // ✅ Decode token & save user in Redux
+          const decodedUser: any = jwtDecode(data.access_token);
+          const user = {
+            _id: decodedUser._id,
+            email: decodedUser.email,
+            firstName: decodedUser.firstName,
+            lastName: decodedUser.lastName,
+            // add other properties if your User type requires them
+          };
+          dispatch(loginSuccess(user));
+
           toast(
             <ToastContent icon="success" message="Logged in successfully!" />
           );
           navigate("/dashboard");
         }
-        setFormData({
-          email: "",
-          password: "",
-        });
-        setSubmitting(false);
       }
-
-      setFormData({
-        email: "",
-        password: "",
-      });
       setSubmitting(false);
-      return;
     } catch (error: any) {
-      if (error.response?.status) {
-        toast(
-          <ToastContent
-            icon="error"
-            message={
-              error.response.data.message ||
-              "Something went wrong. Please try again."
-            }
-          />
-        );
-        setSubmitting(false);
-      } else {
-        toast(
-          <ToastContent
-            icon="error"
-            message="Something went wrong. Please try again."
-          />
-        );
-        setSubmitting(false);
-      }
-      return;
+      const msg =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      dispatch(loginFailure(msg));
+      toast(<ToastContent icon="error" message={msg} />);
+      setSubmitting(false);
     }
   };
 

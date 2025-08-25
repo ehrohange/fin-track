@@ -16,10 +16,17 @@ import api from "../lib/axios";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from "../redux/user/userSlice";
 
 const SignUp = () => {
   const signIn = useSignIn();
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<SignUpFormType>({
@@ -41,8 +48,9 @@ const SignUp = () => {
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      console.log("Clicked!");
       setSubmitting(true);
+
+      // ✅ Basic validations
       if (
         !formData.email.trim() ||
         !formData.firstName.trim() ||
@@ -58,16 +66,26 @@ const SignUp = () => {
         setSubmitting(false);
         return;
       }
+
+      // ✅ Register new user
       const res = await api.post("/users", formData);
+
       if (res.status === 201) {
         toast(
           <ToastContent icon="success" message="Signed up successfully!" />
         );
-        const loginRes = await api.post("/auth/login", formData);
+
+        // ✅ Auto-login immediately after signup
+        dispatch(loginStart());
+        const loginRes = await api.post("/auth/login", {
+          email: formData.email,
+          password: formData.password,
+        });
+
         if (loginRes.status === 200) {
           const data = loginRes.data;
 
-          const success = await signIn({
+          const success = signIn({
             auth: {
               token: data.access_token,
               type: "Bearer",
@@ -75,44 +93,41 @@ const SignUp = () => {
           });
 
           if (success) {
+            // ✅ Decode token & save user in Redux
+            const decodedUser: any = jwtDecode(data.access_token);
+            const user = {
+              _id: decodedUser._id,
+              email: decodedUser.email,
+              firstName: decodedUser.firstName,
+              lastName: decodedUser.lastName,
+            };
+            dispatch(loginSuccess(user));
+
             toast(
               <ToastContent icon="success" message="Logged in successfully!" />
             );
             navigate("/dashboard");
           }
-          setFormData({
-            email: "",
-            firstName: "",
-            lastName: "",
-            password: "",
-          });
-          setConfirmPassword("");
-          setSubmitting(false);
         }
+
+        // ✅ Reset form
+        setFormData({
+          email: "",
+          firstName: "",
+          lastName: "",
+          password: "",
+        });
+        setConfirmPassword("");
       }
-      return;
+
+      setSubmitting(false);
     } catch (error: any) {
-      if (error.response?.status) {
-        toast(
-          <ToastContent
-            icon="error"
-            message={
-              error.response.data.message ||
-              "Something went wrong. Please try again."
-            }
-          />
-        );
-        setSubmitting(false);
-      } else {
-        toast(
-          <ToastContent
-            icon="error"
-            message="Something went wrong. Please try again."
-          />
-        );
-        setSubmitting(false);
-      }
-      return;
+      const msg =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      dispatch(loginFailure(msg));
+      toast(<ToastContent icon="error" message={msg} />);
+      setSubmitting(false);
     }
   };
   // JSX
