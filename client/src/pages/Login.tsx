@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/axios";
-import type { LoginFormType } from "@/lib/types-index";
+import type { LoginFormType, User } from "@/lib/types-index";
 import { Loader2, LogIn } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,9 +18,24 @@ import { toast } from "sonner";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
-import { loginStart, loginSuccess, loginFailure } from "../redux/user/userSlice";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from "../redux/user/userSlice";
+import OAuth from "@/components/oauth";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 const Login = () => {
+  useGSAP(() => {
+    const tl = gsap.timeline({ duration: 0.5, ease: "power1.out" });
+
+    tl.fromTo(".form-card", { y: 20, opacity: 0 }, { y: 0, opacity: 1 });
+
+    tl.fromTo(".graphic", { y: 20, opacity: 0 }, { y: 0, opacity: 1 });
+  }, []);
+
   const dispatch = useDispatch();
 
   const signIn = useSignIn();
@@ -48,7 +63,10 @@ const Login = () => {
       }
 
       dispatch(loginStart());
-      const res = await api.post("/auth/login", formData);
+      const res = await api.post(
+        "/auth/login",
+        formData
+      );
 
       if (res.status === 200 && res.data.access_token) {
         const data = res.data;
@@ -62,12 +80,17 @@ const Login = () => {
 
         if (success) {
           // ✅ Decode token & save user in Redux
-          const decodedUser: any = jwtDecode(data.access_token);
-          const user = {
+          const decodedUser: User = jwtDecode(data.access_token);
+          const user: User = {
             _id: decodedUser._id,
             email: decodedUser.email,
             firstName: decodedUser.firstName,
             lastName: decodedUser.lastName,
+            createdAt: decodedUser.createdAt,
+            updatedAt: decodedUser.updatedAt,
+            __v: decodedUser.__v,
+            iat: decodedUser.iat,
+            exp: decodedUser.exp,
             // add other properties if your User type requires them
           };
           dispatch(loginSuccess(user));
@@ -95,7 +118,7 @@ const Login = () => {
         className="w-full max-w-6xl flex flex-col items-center justify-center gap-10 mx-auto
       lg:flex-row-reverse"
       >
-        <Card className="w-full max-w-sm">
+        <Card className="form-card w-full max-w-sm">
           <CardHeader className="!min-w-fit">
             <CardTitle className="text-2xl">
               <h1>Hello, there.</h1>
@@ -147,13 +170,12 @@ const Login = () => {
                   </>
                 )}
               </Button>
-              <Button className="w-full" variant={"outline"}>
-                Continue with Google
-              </Button>
+              <hr />
+              <OAuth />
             </CardAction>
           </form>
         </Card>
-        <div className="relative w-full max-w-[480px] xl:max-w-[580px]">
+        <div className="graphic relative w-full max-w-[480px] xl:max-w-[580px]">
           <img
             src="/login.webp"
             className="relative w-full"

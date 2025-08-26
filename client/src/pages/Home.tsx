@@ -31,7 +31,7 @@ const homeFeatureCards: HomeFeatureCardProps[] = [
   },
 ];
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+gsap.registerPlugin(useGSAP, ScrollTrigger, TextPlugin);
 
 const Home = () => {
   // const timeline = gsap.timelin(

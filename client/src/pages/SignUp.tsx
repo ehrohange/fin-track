@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { SignUpFormType } from "@/lib/types-index";
+import type { SignUpFormType, User } from "@/lib/types-index";
 import { Loader2, LogIn } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -23,8 +23,19 @@ import {
   loginSuccess,
   loginFailure,
 } from "../redux/user/userSlice";
+import OAuth from "@/components/oauth";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 const SignUp = () => {
+  useGSAP(() => {
+    const tl = gsap.timeline({ duration: 0.5, ease: "power1.out" });
+
+    tl.fromTo(".form-card", { y: 20, opacity: 0 }, { y: 0, opacity: 1 });
+
+    tl.fromTo(".graphic", { y: 20, opacity: 0 }, { y: 0, opacity: 1 });
+  }, []);
+
   const signIn = useSignIn();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -68,7 +79,7 @@ const SignUp = () => {
       }
 
       // ✅ Register new user
-      const res = await api.post("/users", formData);
+      const res = await api.post("/api/users", formData);
 
       if (res.status === 201) {
         toast(
@@ -77,10 +88,13 @@ const SignUp = () => {
 
         // ✅ Auto-login immediately after signup
         dispatch(loginStart());
-        const loginRes = await api.post("/auth/login", {
-          email: formData.email,
-          password: formData.password,
-        });
+        const loginRes = await api.post(
+          "/auth/login",
+          {
+            email: formData.email,
+            password: formData.password,
+          }
+        );
 
         if (loginRes.status === 200) {
           const data = loginRes.data;
@@ -94,12 +108,18 @@ const SignUp = () => {
 
           if (success) {
             // ✅ Decode token & save user in Redux
-            const decodedUser: any = jwtDecode(data.access_token);
-            const user = {
+            const decodedUser: User = jwtDecode(data.access_token);
+            const user: User = {
               _id: decodedUser._id,
               email: decodedUser.email,
               firstName: decodedUser.firstName,
               lastName: decodedUser.lastName,
+              createdAt: decodedUser.createdAt,
+              updatedAt: decodedUser.updatedAt,
+              __v: decodedUser.__v,
+              iat: decodedUser.iat,
+              exp: decodedUser.exp,
+              // add other properties if your User type requires them
             };
             dispatch(loginSuccess(user));
 
@@ -137,7 +157,7 @@ const SignUp = () => {
         className="w-full max-w-6xl flex flex-col items-center justify-center gap-10 mx-auto
       lg:flex-row-reverse"
       >
-        <Card className="w-full max-w-sm">
+        <Card className="form-card w-full max-w-sm">
           <CardHeader className="!min-w-fit">
             <CardTitle className="text-2xl">
               <h1>Hi, there.</h1>
@@ -209,7 +229,7 @@ const SignUp = () => {
                 />
               </div>
             </CardContent>
-            <CardAction className="w-full px-5">
+            <CardAction className="w-full px-5 space-y-5">
               <Button className="w-full" disabled={submitting} type="submit">
                 {submitting ? (
                   <>
@@ -222,10 +242,12 @@ const SignUp = () => {
                   </>
                 )}
               </Button>
+              <hr />
+              <OAuth />
             </CardAction>
           </form>
         </Card>
-        <div className="relative w-full max-w-[480px] xl:max-w-[580px]">
+        <div className="graphic relative w-full max-w-[480px] xl:max-w-[580px]">
           <img
             src="/signup.webp"
             className="relative w-full"

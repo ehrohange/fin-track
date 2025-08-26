@@ -20,3 +20,24 @@ export interface ToastContentType {
     icon: "success" | "warning" | "error" | "informative";
     message: string;
 }
+
+export interface User {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  photoURL?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+  iat?: number;
+  exp?: number;
+}
+
+
+
+export interface UserState {
+  currentUser: User | null;
+  loading: boolean;
+  error: string | null;
+}
