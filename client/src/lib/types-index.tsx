@@ -26,7 +26,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  photoURL?: string;
+  profilePicture?: string;
   createdAt?: string;
   updatedAt?: string;
   __v?: number;

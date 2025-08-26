@@ -10,14 +10,15 @@ import {
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import { NavigationMenuContent } from "@radix-ui/react-navigation-menu";
-import { ChevronRight, LogIn, LogOut, PlusCircle } from "lucide-react";
-import { useState } from "react";
+import { LogIn, PlusCircle } from "lucide-react";
 import UpdateProfile from "./update-profile";
 import UpdatePassword from "./update-password";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import Logout from "./logout";
 
 const Navbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(true);
-
+  const currentUser = useSelector((state: RootState) => state.persistedReducer.user.currentUser);
   return (
     <NavigationMenu className="w-full block max-w-none" viewport={false}>
       <NavigationMenuList className="flex mx-auto items-center justify-between w-full max-w-6xl py-4 px-4">
@@ -34,7 +35,7 @@ const Navbar = () => {
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuList className="md:flex items-center space-x-4 hidden">
-          {isLoggedIn ? (
+          {currentUser ? (
             <>
               <NavigationMenuItem>
                 <Link to={"/"}>
@@ -53,17 +54,17 @@ const Navbar = () => {
                 <NavigationMenuTrigger className="flex flex-row items-center gap-2 w-[200px]">
                   <Avatar className="size-8">
                     <AvatarImage
-                      src="https://github.com/shadcn.png"
+                      src={currentUser?.profilePicture ?? "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
                       alt="@shadcn"
                     />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col gap-0 pr-4 min-w-0 mt-[-2px]">
+                  <div className="flex flex-col gap-0 pr-4 min-w-0 mt-[-2px] overflow-clip">
                     <h1 className="font-medium text-sm truncate">
-                      Jorge Angelo M. Pangilinan
+                      {currentUser?.firstName ?? ""} {currentUser?.lastName ?? ""}
                     </h1>
                     <p className="text-secondary truncate text-xs">
-                      jorgeangelopangilinan@gmail.com
+                      {currentUser?.email ?? ""}
                     </p>
                   </div>
                 </NavigationMenuTrigger>
@@ -76,15 +77,7 @@ const Navbar = () => {
                       <UpdatePassword />
                     </li>
                     <li>
-                      <Button
-                        variant={"ghost"}
-                        className="w-full text-destructive bg-none border-destructive hover:!bg-destructive/10 hover:text-destructive hover:border-2
-                        flex justify-between items-center"
-                      >
-                        <LogOut />
-                        <span>Logout</span>
-                        <ChevronRight />
-                      </Button>
+                      <Logout />
                     </li>
                   </ul>
                 </NavigationMenuContent>

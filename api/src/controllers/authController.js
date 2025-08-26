@@ -38,7 +38,7 @@ export const authGoogleLogin = async (req, res, next) => {
       const access_token = jwt.sign(rest, process.env.JWT_SECRET, {
         expiresIn: "4h",
       });
-      rest.status(200).json({access_token});
+      res.status(200).json({access_token});
     } else {
       const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
       const hashedPassword = await bcrypt.hash(generatedPassword, 10);

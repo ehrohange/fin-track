@@ -38,10 +38,6 @@ const UpdatePassword = () => {
           </DialogHeader>
           <div className="grid gap-5">
             <div className="grid gap-3">
-              <Label htmlFor="password">Current Password</Label>
-              <Input id="password" type="password" placeholder="Current Password" autoComplete="off" />
-            </div>
-            <div className="grid gap-3">
               <Label htmlFor="newPassword">New Password</Label>
               <Input id="newPassword" type="password" placeholder="New Password" autoComplete="new-password" />
             </div>

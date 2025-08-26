@@ -8,17 +8,10 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import {
-  ChartSpline,
-  ChevronRight,
-  LogIn,
-  LogOut,
-  PlusCircle,
-} from "lucide-react";
+import { ChartSpline, ChevronRight, LogIn, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -27,9 +20,14 @@ import {
 } from "./ui/accordion";
 import UpdateProfile from "./update-profile";
 import UpdatePassword from "./update-password";
+import Logout from "./logout";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 
 const AppSideBar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(true);
+  const currentUser = useSelector(
+    (state: RootState) => state.persistedReducer.user.currentUser
+  );
 
   return (
     <Sidebar className="md:hidden">
@@ -44,7 +42,7 @@ const AppSideBar = () => {
             <SidebarTrigger />
           </header>
         </SidebarGroup>
-        {isLoggedIn ? (
+        {currentUser ? (
           <>
             <SidebarGroup className="pt-0">
               <SidebarGroupLabel className="p-0 mb-2">User</SidebarGroupLabel>
@@ -60,17 +58,21 @@ const AppSideBar = () => {
                       <div className="flex items-center gap-2">
                         <Avatar className="size-10">
                           <AvatarImage
-                            src="https://github.com/shadcn.png"
+                            src={
+                              currentUser?.profilePicture ??
+                              "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+                            }
                             alt="@shadcn"
                           />
                           <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col gap-0 pr-4 w-[180px] mt-[-4px]">
                           <h1 className="font-medium truncate">
-                            Jorge Angelo M. Pangilinan
+                            {currentUser?.firstName ?? ""}{" "}
+                            {currentUser?.lastName ?? ""}
                           </h1>
                           <p className="text-secondary truncate text-xs">
-                            jorgeangelopangilinan@gmail.com
+                            {currentUser?.email ?? ""}
                           </p>
                         </div>
                       </div>
@@ -101,7 +103,7 @@ const AppSideBar = () => {
           </SidebarGroup>
         )}
       </SidebarHeader>
-      {isLoggedIn && (
+      {currentUser && (
         <>
           <SidebarContent>
             <SidebarGroup className="mt-[-10px]">
@@ -130,15 +132,7 @@ const AppSideBar = () => {
             <SidebarGroup />
           </SidebarContent>
           <SidebarFooter>
-            <Button
-              variant={"ghost"}
-              className="text-destructive bg-none border-destructive hover:!bg-destructive/10 hover:text-destructive hover:border-2
-          flex items-center justify-between"
-            >
-              <LogOut />
-              <span>Logout</span>
-              <ChevronRight />
-            </Button>
+            <Logout />
           </SidebarFooter>
         </>
       )}
