@@ -38,7 +38,7 @@ const Navbar = () => {
           {currentUser ? (
             <>
               <NavigationMenuItem>
-                <Link to={"/"}>
+                <Link to={"/budget"}>
                   <Button>
                     <PlusCircle />
                     <span>Add Budget</span>
