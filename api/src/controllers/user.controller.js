@@ -1,6 +1,10 @@
 import User from "../Models/User.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import { errorHandler } from "../utils/error.js";
+
+dotenv.config();
 
 export const createUser = async (req, res, next) => {
   const { email, fullName, password } = req.body;
@@ -27,17 +31,37 @@ export const createUser = async (req, res, next) => {
 export const updateUserDetails = async (req, res, next) => {
   const { userId } = req.params;
   const { fullName } = req.body;
+
   try {
+    console.log("It started");
     const user = await User.findById(userId);
+    console.log("User finding done");
     if (!user) return next(errorHandler(404, "User not found."));
+    console.log("There is a user");
     if (!fullName) return next(errorHandler(400, "Full name is required."));
+    console.log("Full name is present");
+
     user.fullName = fullName;
+    console.log("Full name updated!");
     await user.save();
-    return res.status(200).json({ message: "User full name updated successfully!" });
+    console.log("User saved!");
+
+    // Remove password from payload
+    const { password: hashedPassword, ...rest } = user._doc;
+    console.log("User deconstructed");
+    // Create new token with updated user info
+    const access_token = jwt.sign(rest, process.env.JWT_SECRET, {
+      expiresIn: "4h",
+    });
+    console.log("Token signed");
+    return res.status(200).json({
+      message: "User full name updated successfully!",
+      access_token,
+    });
   } catch (error) {
     next(error);
   }
-}
+};
 
 export const updateUserPassword = async (req, res, next) => {
   const { userId } = req.params;

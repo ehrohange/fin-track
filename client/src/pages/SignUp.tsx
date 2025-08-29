@@ -111,6 +111,7 @@ const SignUp = () => {
               _id: decodedUser._id,
               email: decodedUser.email,
               fullName: decodedUser.fullName,
+              profilePicture: decodedUser.profilePicture,
               createdAt: decodedUser.createdAt,
               updatedAt: decodedUser.updatedAt,
               __v: decodedUser.__v,

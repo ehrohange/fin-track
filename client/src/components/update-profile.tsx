@@ -14,17 +14,51 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import type { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
-import { useRef, useState, type ChangeEvent } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  // useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import ToastContent from "./toastcontent";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { jwtDecode } from "jwt-decode";
+import {
+  deleteUserStart,
+  deleteUserSuccess,
+  updateUserFailure,
+  updateUserStart,
+  updateUserSuccess,
+} from "@/redux/user/userSlice";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import type { User } from "@/lib/types-index";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
+import { useNavigate } from "react-router-dom";
 
 const UpdateProfile = () => {
-  const fileRef = useRef<HTMLInputElement>(null);
-
+  // const fileRef = useRef<HTMLInputElement>(null);
+  const dispatch = useDispatch();
+  const signIn = useSignIn();
   const currentUser = useSelector(
     (state: RootState) => state.persistedReducer.user.currentUser
   );
   const [formData, setFormData] = useState({
-    profilePicture: currentUser?.profilePicture || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
+    profilePicture:
+      currentUser?.profilePicture ||
+      "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
     fullName: currentUser?.fullName || "",
   });
 
@@ -32,21 +66,60 @@ const UpdateProfile = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  const updateUserDetails = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const userId = currentUser?._id;
+    if (!userId) return;
+
+    dispatch(updateUserStart());
+
+    try {
+      const res = await api.patch(`/users/name/${userId}`, {
+        fullName: formData.fullName,
+      });
+
+      if (res.status === 200 && res.data.access_token) {
+        // ✅ Save new token in auth-kit
+        const success = signIn({
+          auth: {
+            token: res.data.access_token,
+            type: "Bearer",
+          },
+        });
+
+        if (success) {
+          // ✅ Decode new user from token
+          const decodedUser: User = jwtDecode(res.data.access_token);
+
+          // ✅ Update Redux user
+          dispatch(updateUserSuccess(decodedUser));
+
+          toast(<ToastContent icon="success" message="Full name updated!" />);
+        }
+      } else {
+        throw new Error("Unexpected response");
+      }
+    } catch (error: any) {
+      dispatch(updateUserFailure(error.message || "Update failed"));
+      toast(<ToastContent icon="error" message="Update failed!" />);
+    }
+  };
+
   return (
     <Dialog>
-      <form>
-        <DialogTrigger asChild>
-          <Button
-            variant={"ghost"}
-            className="w-full flex items-center justify-between"
-          >
-            <Pencil />
-            <span>Edit Profile</span>
-            <ChevronRight />
-          </Button>
-        </DialogTrigger>
+      <DialogTrigger asChild>
+        <Button
+          variant={"ghost"}
+          className="w-full flex items-center justify-between"
+        >
+          <Pencil />
+          <span>Edit Profile</span>
+          <ChevronRight />
+        </Button>
+      </DialogTrigger>
 
-        <DialogContent className="px-4 sm:px-8 pt-6 sm:max-w-[425px]">
+      <DialogContent className="grid gap-2 px-4 sm:px-8 pt-6 sm:max-w-[425px]">
+        <form className="grid gap-2" onSubmit={updateUserDetails}>
           <DialogHeader>
             <DialogTitle className="text-xl">Edit Profile</DialogTitle>
             <DialogDescription>
@@ -59,12 +132,12 @@ const UpdateProfile = () => {
               Profile Picture
             </Label>
             <div className="size-28 relative cursor-pointer">
-              <Input type="file" className="hidden" ref={fileRef} />
+              {/* <Input type="file" className="hidden" ref={fileRef} /> */}
               <Avatar className="size-full" id="avatar">
                 <AvatarImage
                   src={formData.profilePicture}
                   alt="@shadcn"
-                  onClick={() => fileRef.current?.click()}
+                  // onClick={() => fileRef.current?.click()}
                 />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
@@ -101,16 +174,77 @@ const UpdateProfile = () => {
               </Button>
             </div>
             <hr className="h-1 w-full mt-4" />
-            <Button
-              variant={"ghost"}
-              className="mt-[-0.3rem] text-destructive hover:!bg-destructive/50 hover:!border-destructive hover:border-2"
-            >
-              <Trash className="mt-[-1px]" /> Delete Account
-            </Button>
+            <DeleteAlertDialog />
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
+  );
+};
+
+const DeleteAlertDialog = () => {
+  const dispatch = useDispatch();
+  const currentUser = useSelector(
+    (state: RootState) => state.persistedReducer.user.currentUser
+  );
+  const signOut = useSignOut();
+  const navigate = useNavigate();
+  const handleDeleteUser = async () => {
+    const userId = currentUser?._id;
+    if (!userId) return;
+    dispatch(deleteUserStart());
+    try {
+      const res = await api.delete(`/users/${userId}`);
+      if (res.status === 200) {
+        dispatch(deleteUserSuccess());
+        signOut();
+        toast(
+          <ToastContent
+            icon="success"
+            message={
+              res.data.message ||
+              "Account deleted. Thank you for using our services!"
+            }
+          />
+        );
+        navigate("/login");
+      }
+    } catch (error) {
+      toast(
+        <ToastContent
+          icon="error"
+          message="Account deletion failed. Please try again."
+        />
+      );
+    }
+  };
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant={"ghost"}
+          className="mt-[-0.3rem] text-destructive hover:!bg-destructive/50 hover:!border-destructive hover:border-2"
+        >
+          <Trash className="mt-[-1px]" /> Delete Account
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="sm:max-w-[425px]">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction className="bg-destructive/80 hover:bg-destructive" onClick={handleDeleteUser}>
+          <Trash />
+            Yes, delete my account
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

@@ -84,8 +84,8 @@ const Login = () => {
           const user: User = {
             _id: decodedUser._id,
             email: decodedUser.email,
-            firstName: decodedUser.firstName,
-            lastName: decodedUser.lastName,
+            fullName: decodedUser.fullName,
+            profilePicture: decodedUser.profilePicture,
             createdAt: decodedUser.createdAt,
             updatedAt: decodedUser.updatedAt,
             __v: decodedUser.__v,
