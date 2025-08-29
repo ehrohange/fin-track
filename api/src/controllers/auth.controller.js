@@ -43,8 +43,7 @@ export const authGoogleLogin = async (req, res, next) => {
       const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
       const hashedPassword = await bcrypt.hash(generatedPassword, 10);
       const newUser = await User.create({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
+        fullName: req.body.fullName,
         email: req.body.email,
         password: hashedPassword,
         profilePicture: req.body.profilePicture

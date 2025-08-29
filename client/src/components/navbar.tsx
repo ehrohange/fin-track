@@ -61,7 +61,7 @@ const Navbar = () => {
                   </Avatar>
                   <div className="flex flex-col gap-0 pr-4 min-w-0 mt-[-2px] overflow-clip">
                     <h1 className="font-medium text-sm truncate">
-                      {currentUser?.firstName ?? ""} {currentUser?.lastName ?? ""}
+                      {currentUser?.fullName ?? ""}
                     </h1>
                     <p className="text-secondary truncate text-xs">
                       {currentUser?.email ?? ""}

@@ -1,13 +1,13 @@
 import { app } from "@/firebase";
 import { Button } from "./ui/button";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  getAuth,
-} from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import api from "@/lib/axios";
 import { useDispatch } from "react-redux";
-import { loginStart, loginSuccess, loginFailure } from "../redux/user/userSlice";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from "../redux/user/userSlice";
 import { useNavigate } from "react-router-dom";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { jwtDecode } from "jwt-decode";
@@ -28,15 +28,9 @@ const OAuth = () => {
 
       const firebaseUser = result.user;
 
-      // Split displayName
-      const displayName = firebaseUser.displayName || "";
-      const [firstName, ...rest] = displayName.split(" ");
-      const lastName = rest.join(" ");
-
       const payload = {
         email: firebaseUser.email,
-        firstName,
-        lastName,
+        fullName: firebaseUser.displayName || "",
         profilePicture: firebaseUser.photoURL,
       };
 
@@ -57,7 +51,9 @@ const OAuth = () => {
           const decodedUser: User = jwtDecode(data.access_token);
           dispatch(loginSuccess(decodedUser));
 
-          toast(<ToastContent icon="success" message="Logged in with Google!" />);
+          toast(
+            <ToastContent icon="success" message="Logged in with Google!" />
+          );
           navigate("/dashboard");
         }
       }

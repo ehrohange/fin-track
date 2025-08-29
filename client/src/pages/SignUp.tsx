@@ -42,8 +42,7 @@ const SignUp = () => {
 
   const [formData, setFormData] = useState<SignUpFormType>({
     email: "",
-    firstName: "",
-    lastName: "",
+    fullName: "",
     password: "",
   });
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -64,8 +63,7 @@ const SignUp = () => {
       // ✅ Basic validations
       if (
         !formData.email.trim() ||
-        !formData.firstName.trim() ||
-        !formData.lastName.trim() ||
+        !formData.fullName.trim() ||
         !formData.password.trim()
       ) {
         toast(<ToastContent icon="error" message="All fields are required!" />);
@@ -112,8 +110,7 @@ const SignUp = () => {
             const user: User = {
               _id: decodedUser._id,
               email: decodedUser.email,
-              firstName: decodedUser.firstName,
-              lastName: decodedUser.lastName,
+              fullName: decodedUser.fullName,
               createdAt: decodedUser.createdAt,
               updatedAt: decodedUser.updatedAt,
               __v: decodedUser.__v,
@@ -133,8 +130,7 @@ const SignUp = () => {
         // ✅ Reset form
         setFormData({
           email: "",
-          firstName: "",
-          lastName: "",
+          fullName: "",
           password: "",
         });
         setConfirmPassword("");
@@ -185,23 +181,12 @@ const SignUp = () => {
                 />
               </div>
               <div className="grid w-full items-center gap-3">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   type="text"
-                  id="firstName"
+                  id="fullName"
                   placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  type="text"
-                  id="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
+                  value={formData.fullName}
                   onChange={handleChange}
                   required
                 />

@@ -6,8 +6,7 @@ export interface HomeFeatureCardProps {
 
 export interface SignUpFormType {
     email: string;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     password: string;
 }
 
@@ -24,8 +23,7 @@ export interface ToastContentType {
 export interface User {
   _id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   profilePicture?: string;
   createdAt?: string;
   updatedAt?: string;

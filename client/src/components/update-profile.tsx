@@ -15,16 +15,17 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import type { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 
 const UpdateProfile = () => {
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const currentUser = useSelector(
     (state: RootState) => state.persistedReducer.user.currentUser
   );
   const [formData, setFormData] = useState({
     profilePicture: currentUser?.profilePicture || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
-    firstName: currentUser?.firstName || "",
-    lastName: currentUser?.lastName || "",
+    fullName: currentUser?.fullName || "",
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -58,10 +59,12 @@ const UpdateProfile = () => {
               Profile Picture
             </Label>
             <div className="size-28 relative cursor-pointer">
+              <Input type="file" className="hidden" ref={fileRef} />
               <Avatar className="size-full" id="avatar">
                 <AvatarImage
                   src={formData.profilePicture}
                   alt="@shadcn"
+                  onClick={() => fileRef.current?.click()}
                 />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
@@ -75,26 +78,14 @@ const UpdateProfile = () => {
           </div>
           <div className="grid gap-5">
             <div className="grid gap-3">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="fullName">Full Name</Label>
               <Input
-                id="firstName"
+                id="fullName"
                 type="text"
-                placeholder="First Name"
+                placeholder="Full Name"
                 autoComplete="off"
                 onChange={handleChange}
-                value={formData.firstName}
-                required
-              />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                type="text"
-                placeholder="Last Name"
-                autoComplete="off"
-                onChange={handleChange}
-                value={formData.lastName}
+                value={formData.fullName}
                 required
               />
             </div>

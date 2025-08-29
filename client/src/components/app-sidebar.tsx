@@ -68,8 +68,7 @@ const AppSideBar = () => {
                         </Avatar>
                         <div className="flex flex-col gap-0 pr-4 w-[180px] mt-[-4px]">
                           <h1 className="font-medium truncate">
-                            {currentUser?.firstName ?? ""}{" "}
-                            {currentUser?.lastName ?? ""}
+                            {currentUser?.fullName ?? ""}
                           </h1>
                           <p className="text-secondary truncate text-xs">
                             {currentUser?.email ?? ""}
