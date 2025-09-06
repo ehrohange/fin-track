@@ -39,3 +39,18 @@ export interface UserState {
   loading: boolean;
   error: string | null;
 }
+
+export interface Transaction {
+  _id: string;
+  userId: string;
+  categoryId: {
+    type: string;
+    name: string;
+  },
+  amount: number;
+  date: string;
+  description: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}

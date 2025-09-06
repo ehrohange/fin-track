@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { SidebarTrigger } from "./ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -18,7 +18,13 @@ import type { RootState } from "@/redux/store";
 import Logout from "./logout";
 
 const Navbar = () => {
-  const currentUser = useSelector((state: RootState) => state.persistedReducer.user.currentUser);
+  const location = useLocation();
+  const path = location.pathname;
+  const pathLastPart = path.substring(path.lastIndexOf("/") + 1);
+  const currentUser = useSelector(
+    (state: RootState) => state.persistedReducer.user.currentUser
+  );
+  console.log(currentUser?.profilePicture);
   return (
     <NavigationMenu className="w-full block max-w-none" viewport={false}>
       <NavigationMenuList className="flex mx-auto items-center justify-between w-full max-w-6xl py-4 px-4">
@@ -37,14 +43,16 @@ const Navbar = () => {
         <NavigationMenuList className="md:flex items-center space-x-4 hidden">
           {currentUser ? (
             <>
-              <NavigationMenuItem>
-                <Link to={"/budget"}>
-                  <Button>
-                    <PlusCircle />
-                    <span>Add Budget</span>
-                  </Button>
-                </Link>
-              </NavigationMenuItem>
+              {pathLastPart !== "budget" && (
+                <NavigationMenuItem>
+                  <Link to={"/budget"}>
+                    <Button>
+                      <PlusCircle />
+                      <span>Add Budget</span>
+                    </Button>
+                  </Link>
+                </NavigationMenuItem>
+              )}
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
                   <Link to="/dashboard">Dashboard</Link>
@@ -54,7 +62,10 @@ const Navbar = () => {
                 <NavigationMenuTrigger className="flex flex-row items-center gap-2 w-[200px]">
                   <Avatar className="size-8">
                     <AvatarImage
-                      src={currentUser?.profilePicture ?? "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
+                      src={
+                        currentUser?.profilePicture ??
+                        "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+                      }
                       alt="@shadcn"
                     />
                     <AvatarFallback>CN</AvatarFallback>
@@ -87,7 +98,8 @@ const Navbar = () => {
             <NavigationMenuItem>
               <Link to="/login">
                 <Button className="text-white" variant={"default"}>
-                  <LogIn /><span>Login</span>
+                  <LogIn />
+                  <span>Login</span>
                 </Button>
               </Link>
             </NavigationMenuItem>
