@@ -2,6 +2,7 @@ import Transaction from "../Models/Transaction.js";
 import Category from "../Models/Category.js";
 import { errorHandler } from "../utils/error.js";
 import User from "../Models/User.js";
+import Goal from "../Models/Goal.js";
 
 export const createCategory = async (req, res, next) => {
   const { name, type, color } = req.body;
@@ -68,7 +69,7 @@ export const createTransaction = async (req, res, next) => {
       parsedDate = new Date(date); // JavaScript Date understands "Aug 30 2025"
       if (isNaN(parsedDate.getTime())) {
         return next(
-          errorHandler(400, "Invalid date format. Use: 'Aug 30 2025'")
+          errorHandler(400, "Invalid date format. Use: 'Mmm XX XXXX'")
         );
       }
     } else {
@@ -157,4 +158,83 @@ export const getTransactionsByUserIdAndDate = async (req, res, next) => {
   }
 };
 
+export const createGoal = async (req, res, next) => {
+  try {
+    const { userId, categoryId } = req.params;
 
+    const user = await User.findById(userId);
+    if (!user) return next(errorHandler(404, "User not found."));
+
+    const category = await Category.findById(categoryId);
+    if (!category) return next(errorHandler(404, "Category not found,"));
+
+    const { goalAmount, goalName, goalStartDate, goalDeadline } =
+      req.body;
+    if (!goalAmount || !goalName || !goalDeadline)
+      return next(errorHandler(400, "All fields are required."));
+
+    const goals = await Goal.find({
+      userId,
+      goalName,
+      categoryId,
+    });
+    if (goals.length > 0) return next(errorHandler(400, "This goal already exists."));
+
+    let parsedStartDate;
+    if (goalStartDate) {
+      parsedStartDate = new Date(goalStartDate);
+      if (isNaN(parsedStartDate.getTime())) {
+        return next(
+          errorHandler(400, "Invalid date format. Use: 'Mmm XX XXXX'")
+        );
+      }
+    } else {
+      parsedStartDate = new Date();
+    }
+
+    let parsedDeadline;
+    parsedDeadline = new Date(goalDeadline); // JavaScript Date understands "Aug 30 2025"
+    if (isNaN(parsedDeadline.getTime())) {
+      return next(errorHandler(400, "Invalid date format. Use: 'Mmm XX XXXX'"));
+    }
+
+    const goal = await Goal.create({
+      userId,
+      categoryId,
+      amount: 0,
+      goalAmount,
+      goalName,
+      goalStartDate: parsedStartDate,
+      goalDeadline: parsedDeadline,
+    });
+
+    const populatedGoal = await Goal.findById(goal._id)
+      .populate("categoryId", "name type color")
+      .lean();
+
+    if (populatedGoal.goalStartDate) {
+      populatedGoal.goalStartDate = new Date(
+        populatedGoal.goalStartDate
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    if (populatedGoal.goalDeadline) {
+      populatedGoal.goalDeadline = new Date(
+        populatedGoal.goalDeadline
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    res.status(201).json({
+      message: "Goal added!",
+      goal: populatedGoal,
+    });
+  } catch (error) {}
+};
