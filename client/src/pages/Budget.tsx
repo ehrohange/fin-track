@@ -7,7 +7,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, ChevronsUpDown, Check, Banknote, PlusCircle } from "lucide-react";
+import {
+  CalendarIcon,
+  ChevronsUpDown,
+  Check,
+  Banknote,
+  PlusCircle,
+} from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -34,6 +40,12 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
 import type { Transaction } from "@/lib/types-index";
+import { useDispatch } from "react-redux";
+import {
+  budgetDateSelectStart,
+  budgetDateSelectSuccess,
+  budgetDateSelectFailure,
+} from "../redux/budget/budgetPageDateSlice";
 
 const Budget = () => {
   const [open, setOpen] = useState(false);
@@ -42,9 +54,26 @@ const Budget = () => {
   const [tab, setTab] = useState("income"); // current selected tab
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const dispatch = useDispatch();
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(transactions.length / rowsPerPage);
+
+  const currentUser = useSelector(
+    (state: any) => state.persistedReducer.user.currentUser
+  );
+
+  const currentDate = useSelector(
+    (state: any) => state.persistedReducer.budgetDate.currentSelectedDate
+  );
 
   // ✅ initial value: today
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(() => {
+    return currentDate ? new Date(currentDate) : new Date();
+  });
   const [formData, setFormData] = useState({
     description: "",
     amount: 1,
@@ -57,10 +86,6 @@ const Budget = () => {
     const year = d.getFullYear();
     return `${month} ${day} ${year}`; // e.g. "Aug 25 2025"
   };
-
-  const currentUser = useSelector(
-    (state: any) => state.persistedReducer.user.currentUser
-  );
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -102,6 +127,21 @@ const Budget = () => {
       );
     }
   };
+
+  useEffect(() => {
+    if (currentDate) {
+      setDate(new Date(currentDate));
+    }
+  }, [currentDate]);
+
+  useEffect(() => {
+    dispatch(budgetDateSelectStart());
+    try {
+      dispatch(budgetDateSelectSuccess(formatDate(date)));
+    } catch (error) {
+      dispatch(budgetDateSelectFailure("Error updating date."));
+    }
+  }, [date]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -326,58 +366,87 @@ const Budget = () => {
         </div>
         <hr />
         {transactions.length !== 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Desc</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((item) => (
-                <TableRow key={item._id}>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>
-                    {capitalizeFirstLetter(item.categoryId.type)}
-                  </TableCell>
-                  <TableCell>{item.categoryId.name}</TableCell>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Desc</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentRows.map((item) => (
+                  <TableRow key={item._id}>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell>
+                      {capitalizeFirstLetter(item.categoryId.type)}
+                    </TableCell>
+                    <TableCell>{item.categoryId.name}</TableCell>
+                    <TableCell
+                      className={
+                        cn(
+                          item.categoryId.type === "expense" &&
+                            "text-destructive",
+                          item.categoryId.type === "savings" && "text-white",
+                          item.categoryId.type === "income" &&
+                            "text-primary font-semibold"
+                        ) + " text-right"
+                      }
+                    >
+                      {item.categoryId.type === "income"
+                        ? `+${toPeso(item.amount)}`
+                        : `-${toPeso(item.amount)}`}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={3}>Total Balance</TableCell>
                   <TableCell
-                    className={
-                      cn(
-                        item.categoryId.type === "expense" &&
-                          "text-destructive",
-                        item.categoryId.type === "savings" && "text-white",
-                        item.categoryId.type === "income" &&
-                          "text-primary font-semibold"
-                      ) + " text-right"
-                    }
+                    className={`font-bold ${
+                      total > 0
+                        ? "text-primary"
+                        : total < 0
+                        ? "text-destructive"
+                        : "text-white"
+                    } text-right`}
                   >
-                    {item.categoryId.type === "income"
-                      ? `+${toPeso(item.amount)}`
-                      : `-${toPeso(item.amount)}`}
+                    {toPeso(total)}
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={3}>Total Balance</TableCell>
-                <TableCell
-                  className={`font-bold ${
-                    total > 0
-                      ? "text-primary"
-                      : total < 0
-                      ? "text-destructive"
-                      : "text-white"
-                  } text-right`}
-                >
-                  {toPeso(total)}
-                </TableCell>
-              </TableRow>
-            </TableFooter>
-          </Table>
+              </TableFooter>
+            </Table>
+            <div className="w-full flex items-center justify-center gap-4 mt-4 max-w-lg mx-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                Prev
+              </Button>
+
+              <p className="text-sm text-white/85 flex-grow text-center">
+                Page{" "}
+                <span className="text-primary font-bold text-[15px]">
+                  {currentPage}
+                </span>{" "}
+                of {totalPages}
+              </p>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </>
         ) : (
           <div className="relative w-full max-w-4xl mx-auto">
             <img

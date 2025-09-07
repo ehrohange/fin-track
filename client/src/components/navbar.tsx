@@ -24,7 +24,6 @@ const Navbar = () => {
   const currentUser = useSelector(
     (state: RootState) => state.persistedReducer.user.currentUser
   );
-  console.log(currentUser?.profilePicture);
   return (
     <NavigationMenu className="w-full block max-w-none" viewport={false}>
       <NavigationMenuList className="flex mx-auto items-center justify-between w-full max-w-6xl py-4 px-4">

@@ -54,3 +54,9 @@ export interface Transaction {
   updatedAt?: string;
   __v?: number;
 }
+
+export interface BudgetDateState {
+  currentSelectedDate: string | null;
+  loading: boolean;
+  error: string | null;
+}
