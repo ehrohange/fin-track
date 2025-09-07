@@ -253,3 +253,15 @@ export const createGoal = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getGoals = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) return next(errorHandler(404, "User not found."));
+    const goals = await Goal.find();
+    return res.status(200).json({goals});
+  } catch (error) {
+    next(error);
+  }
+}
