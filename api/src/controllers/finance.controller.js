@@ -158,6 +158,19 @@ export const getTransactionsByUserIdAndDate = async (req, res, next) => {
   }
 };
 
+export const deleteTransaction = async (req, res, next) => {
+  try {
+    const { userId, transactionId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) return next(errorHandler(404, "User not found."));
+    const transaction = await Transaction.findByIdAndDelete(transactionId);
+    if (!transaction) return next(errorHandler(404, "Transaction not found."));
+    return res.status(200).json({ message: "Transaction deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createGoal = async (req, res, next) => {
   try {
     const { userId, categoryId } = req.params;
@@ -168,8 +181,7 @@ export const createGoal = async (req, res, next) => {
     const category = await Category.findById(categoryId);
     if (!category) return next(errorHandler(404, "Category not found,"));
 
-    const { goalAmount, goalName, goalStartDate, goalDeadline } =
-      req.body;
+    const { goalAmount, goalName, goalStartDate, goalDeadline } = req.body;
     if (!goalAmount || !goalName || !goalDeadline)
       return next(errorHandler(400, "All fields are required."));
 
@@ -178,7 +190,8 @@ export const createGoal = async (req, res, next) => {
       goalName,
       categoryId,
     });
-    if (goals.length > 0) return next(errorHandler(400, "This goal already exists."));
+    if (goals.length > 0)
+      return next(errorHandler(400, "This goal already exists."));
 
     let parsedStartDate;
     if (goalStartDate) {
@@ -236,5 +249,7 @@ export const createGoal = async (req, res, next) => {
       message: "Goal added!",
       goal: populatedGoal,
     });
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
 };
