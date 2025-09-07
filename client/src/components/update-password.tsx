@@ -1,4 +1,4 @@
-import { ChevronRight, Lock, Save } from "lucide-react";
+import { ChevronRight, Lock, LockKeyholeIcon, Save } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -20,9 +20,7 @@ import ToastContent from "./toastcontent";
 import { toast } from "sonner";
 
 const UpdatePassword = () => {
-  const currentUser = useSelector(
-    (state: RootState) => state.persistedReducer.user.currentUser
-  );
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
 
   const userId = currentUser?._id;
   const [formData, setFormData] = useState({
@@ -32,7 +30,7 @@ const UpdatePassword = () => {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
-  }
+  };
 
   const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,14 +76,25 @@ const UpdatePassword = () => {
       </DialogTrigger>
 
       <DialogContent className="px-4 sm:px-8 pt-6 sm:max-w-[425px]">
-        <form autoComplete="off" className="grid gap-3" onSubmit={handleUpdatePassword}>
+        <form
+          autoComplete="off"
+          className="grid gap-3"
+          onSubmit={handleUpdatePassword}
+        >
           <DialogHeader>
-            <DialogTitle className="text-xl">Update Password</DialogTitle>
-            <DialogDescription>
-              Make changes to your password here. Click save when you&apos;re
-              done.
-            </DialogDescription>
+            <div className="flex items-start gap-4">
+              <div className="flex items-center justify-center bg-primary/50 size-12 rounded-sm">
+                <LockKeyholeIcon />
+              </div>
+              <div className="grid gap-2 text-left mt-[2px]">
+                <DialogTitle>Update Password</DialogTitle>
+                <DialogDescription>
+                  Make changes to your password here.
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
+          <hr className="my-2" />
           <div className="grid gap-5">
             <div className="grid gap-3">
               <Label htmlFor="newPassword">New Password</Label>

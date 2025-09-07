@@ -14,7 +14,12 @@ import {
   Banknote,
   PlusCircle,
 } from "lucide-react";
-import { Card, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Command,
@@ -39,7 +44,7 @@ import {
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
-import type { Transaction } from "@/lib/types-index";
+import { type Goal, type Transaction } from "@/lib/types-index";
 import { useDispatch } from "react-redux";
 import {
   budgetDateSelectStart,
@@ -56,18 +61,17 @@ const Budget = () => {
   const [total, setTotal] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const dispatch = useDispatch();
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(transactions.length / rowsPerPage);
 
-  const currentUser = useSelector(
-    (state: any) => state.persistedReducer.user.currentUser
-  );
+  const currentUser = useSelector((state: any) => state.user.currentUser);
 
   const currentDate = useSelector(
-    (state: any) => state.persistedReducer.budgetDate.currentSelectedDate
+    (state: any) => state.budgetDate.currentSelectedDate
   );
 
   // ✅ initial value: today
@@ -252,10 +256,26 @@ const Budget = () => {
             </div>
           </div>
           <Card className="w-full p-6 sm:max-w-md md:max-w-xl xl:max-w-xl">
-            <CardTitle>
-              <h1 className="text-2xl">Transaction</h1>
-              <hr className="mt-3" />
-            </CardTitle>
+            <CardHeader className="p-0">
+              <div className="flex items-start gap-4">
+                <div
+                  className={`flex items-center justify-center size-12 rounded-sm  ${
+                    tab === "expense" ? "bg-destructive/50" : tab === "savings" ? "bg-white/40" : "bg-primary/50"
+                  }`}
+                >
+                  <Banknote />
+                </div>
+
+                <div className="grid gap-2 text-left mt-[2px]">
+                  <CardTitle>Transaction</CardTitle>
+                  <CardDescription>
+                    Enter your transaction details here.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+
+            <hr className="mt-[-6px]" />
             <Tabs
               defaultValue="income"
               className="w-full grid gap-5"

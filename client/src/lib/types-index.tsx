@@ -1,23 +1,23 @@
 export interface HomeFeatureCardProps {
-    title: string;
-    desc: string;
-    imgsrc: string;
+  title: string;
+  desc: string;
+  imgsrc: string;
 }
 
 export interface SignUpFormType {
-    email: string;
-    fullName: string;
-    password: string;
+  email: string;
+  fullName: string;
+  password: string;
 }
 
 export interface LoginFormType {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 }
 
 export interface ToastContentType {
-    icon: "success" | "warning" | "error" | "informative";
-    message: string;
+  icon: "success" | "warning" | "error" | "informative";
+  message: string;
 }
 
 export interface User {
@@ -32,8 +32,6 @@ export interface User {
   exp?: number;
 }
 
-
-
 export interface UserState {
   currentUser: User | null;
   loading: boolean;
@@ -46,7 +44,7 @@ export interface Transaction {
   categoryId: {
     type: string;
     name: string;
-  },
+  };
   amount: number;
   date: string;
   description: string;
@@ -59,4 +57,27 @@ export interface BudgetDateState {
   currentSelectedDate: string | null;
   loading: boolean;
   error: string | null;
+}
+
+export interface Goal {
+  _id: string;
+  userId: string;
+  categoryId: {
+    color: string;
+    type: string;
+    name: string;
+  };
+  amount: number;
+  goalName: number;
+  goalAmount: number;
+  goalStartDate: string;
+  goalDeadline: string;
+  active: boolean;
+}
+
+export interface GoalRes {
+  data: {
+    message?: string;
+    goals: Goal[];
+  };
 }

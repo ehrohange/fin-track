@@ -1,4 +1,4 @@
-import { ChevronRight, Pencil, Save, Trash } from "lucide-react";
+import { ChevronRight, Pencil, PencilLine, Save, Trash } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -52,9 +52,7 @@ const UpdateProfile = () => {
   // const fileRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
   const signIn = useSignIn();
-  const currentUser = useSelector(
-    (state: RootState) => state.persistedReducer.user.currentUser
-  );
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const [formData, setFormData] = useState({
     profilePicture:
       currentUser?.profilePicture ||
@@ -121,12 +119,19 @@ const UpdateProfile = () => {
       <DialogContent className="grid gap-2 px-4 sm:px-8 pt-6 sm:max-w-[425px]">
         <form className="grid gap-2" onSubmit={updateUserDetails}>
           <DialogHeader>
-            <DialogTitle className="text-xl">Edit Profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you&apos;re
-              done.
-            </DialogDescription>
+            <div className="flex items-start gap-4">
+              <div className="size-12 flex items-center justify-center bg-primary/50 rounded-sm">
+                <PencilLine />
+              </div>
+              <div className="grid gap-2 text-left mt-[2px]">
+                <DialogTitle>Edit Profile</DialogTitle>
+                <DialogDescription>
+                  Make changes to your profile here.
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
+          <hr className="my-2"/>
           <div className="w-full flex justify-center flex-col items-center">
             <Label htmlFor="avatar" className="mb-2">
               Profile Picture
@@ -184,9 +189,7 @@ const UpdateProfile = () => {
 
 const DeleteAlertDialog = () => {
   const dispatch = useDispatch();
-  const currentUser = useSelector(
-    (state: RootState) => state.persistedReducer.user.currentUser
-  );
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const signOut = useSignOut();
   const navigate = useNavigate();
   const handleDeleteUser = async () => {
@@ -238,8 +241,11 @@ const DeleteAlertDialog = () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-destructive/80 hover:bg-destructive" onClick={handleDeleteUser}>
-          <Trash />
+          <AlertDialogAction
+            className="bg-destructive/80 hover:bg-destructive"
+            onClick={handleDeleteUser}
+          >
+            <Trash />
             Yes, delete my account
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -22,7 +22,7 @@ const Navbar = () => {
   const path = location.pathname;
   const pathLastPart = path.substring(path.lastIndexOf("/") + 1);
   const currentUser = useSelector(
-    (state: RootState) => state.persistedReducer.user.currentUser
+    (state: RootState) => state.user.currentUser
   );
   return (
     <NavigationMenu className="w-full block max-w-none" viewport={false}>

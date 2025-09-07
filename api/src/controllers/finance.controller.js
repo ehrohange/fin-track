@@ -257,11 +257,46 @@ export const createGoal = async (req, res, next) => {
 export const getGoals = async (req, res, next) => {
   try {
     const { userId } = req.params;
+
     const user = await User.findById(userId);
     if (!user) return next(errorHandler(404, "User not found."));
-    const goals = await Goal.find();
-    return res.status(200).json({goals});
+
+    const goals = await Goal.find({ userId })
+      .populate("categoryId", "name type color") // populate categoryId
+      .lean(); // return plain JS objects
+
+    if (goals.length === 0)
+      return res.status(200).json({ message: "No goals found.", goals: [] });
+
+    // Format dates for each goal
+    const formattedGoals = goals.map((goal) => {
+      const formatted = { ...goal };
+
+      if (formatted.goalStartDate) {
+        formatted.goalStartDate = new Date(
+          formatted.goalStartDate
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      if (formatted.goalDeadline) {
+        formatted.goalDeadline = new Date(
+          formatted.goalDeadline
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      return formatted;
+    });
+
+    return res.status(200).json({ goals: formattedGoals });
   } catch (error) {
     next(error);
   }
-}
+};

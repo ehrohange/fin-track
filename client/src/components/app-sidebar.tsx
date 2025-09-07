@@ -26,7 +26,7 @@ import type { RootState } from "@/redux/store";
 
 const AppSideBar = () => {
   const currentUser = useSelector(
-    (state: RootState) => state.persistedReducer.user.currentUser
+    (state: RootState) => state.user.currentUser
   );
 
   return (
