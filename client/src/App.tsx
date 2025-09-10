@@ -14,7 +14,7 @@ import Budget from "./pages/Budget";
 function App() {
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="relative w-full flex flex-col">
+      <div className="relative w-full flex flex-col overflow-hidden">
         <Toaster position="bottom-center" theme="light" />
         {/* Background for extra-large screens */}
         <img

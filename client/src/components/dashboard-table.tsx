@@ -1,0 +1,167 @@
+import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import type { Transaction } from "@/lib/types-index";
+import api from "@/lib/axios";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import ToastContent from "./toastcontent";
+import { toast } from "sonner";
+import DeleteTransaction from "./delete-transaction";
+
+interface DashboardTableProps {
+  transactions: Transaction[];
+  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+}
+
+const DashboardTable = ({transactions, setTransactions} : DashboardTableProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(transactions.length / rowsPerPage);
+
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
+
+  const formatDate = (d: Date | undefined) => {
+    if (!d) return "";
+    const month = d.toLocaleString("en-US", { month: "short" });
+    const day = d.getDate();
+    const year = d.getFullYear();
+    return `${month} ${day} ${year}`; // e.g. "Aug 25 2025"
+  };
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get(`/finance/transactions/${currentUser?._id}`);
+
+        const sorted = res.data.transactions.sort(
+          (a: Transaction, b: Transaction) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        setTransactions(sorted);
+      } catch (error) {
+        toast(
+          <ToastContent icon="error" message="Failed to fetch transactions." />
+        );
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const toPeso = (num: number) => {
+    return num.toLocaleString("en-PH", {
+      style: "currency",
+      currency: "PHP",
+      minimumFractionDigits: 2,
+    });
+  };
+
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  const handleRemoveTransaction = (id: string) => {
+    setTransactions((prev) => prev.filter((t) => t._id !== id));
+  };
+  return (
+    <section className="w-full max-w-6xl mt-6">
+      <hr className="mb-4 mt-3" />
+      <h4 className="text-white/80">These are all your</h4>
+      <h1 className="font-bold font-doto text-3xl">Transactions</h1>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Desc</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="text-right">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {currentRows.map((item, index) => (
+            <TableRow
+              key={item._id}
+              className={(index % 2 && "bg-primary/8") || ""}
+            >
+              <TableCell>
+                {formatDate(item.date ? new Date(item.date) : undefined)}
+              </TableCell>
+              <TableCell>{item.description}</TableCell>
+              <TableCell>
+                {capitalizeFirstLetter(item.categoryId.type)}
+              </TableCell>
+              <TableCell>{item.categoryId.name}</TableCell>
+              <TableCell
+                className={
+                  cn(
+                    item.categoryId.type === "expense" && "text-destructive",
+                    item.categoryId.type === "savings" && "text-white",
+                    item.categoryId.type === "income" &&
+                      "text-primary font-semibold"
+                  ) + " text-right"
+                }
+              >
+                {item.categoryId.type === "income"
+                  ? `+${toPeso(item.amount)}`
+                  : `-${toPeso(item.amount)}`}
+              </TableCell>
+              <TableCell>
+                {currentUser && (
+                  <DeleteTransaction
+                    userId={currentUser._id}
+                    _id={item._id}
+                    onDeleted={handleRemoveTransaction}
+                  />
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="w-full flex items-center justify-center gap-4 mt-4 max-w-lg mx-auto">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((p) => p - 1)}
+        >
+          Prev
+        </Button>
+
+        <p className="text-sm text-white/85 flex-grow text-center">
+          Page{" "}
+          <span className="text-primary font-bold text-[15px]">
+            {currentPage}
+          </span>{" "}
+          of {totalPages}
+        </p>
+
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((p) => p + 1)}
+        >
+          Next
+        </Button>
+      </div>
+    </section>
+  );
+};
+
+export default DashboardTable;

@@ -378,8 +378,8 @@ const Budget = () => {
       </section>
       <section className="w-full mx-auto sm:max-w-4xl lg:max-w-6xl xl:max-w-6xl grid mt-6">
         <div className="w-full uppercase flex flex-col items-center sm:flex-row sm:gap-6 text-4xl justify-center my-2 lg:justify-start">
-          <Banknote className="size-7 mr-[-10px] hidden sm:block" />
-          <h1 className="font-doto font-bold">budget for</h1>
+          <Banknote className="size-7 mr-[-10px] hidden md:block" />
+          <h1 className="font-doto font-bold text-center sm:text-left">transactions for</h1>
           <h1 className="font-doto font-bold">
             {date ? formatDate(date) : "Select a date"}
           </h1>
@@ -475,7 +475,7 @@ const Budget = () => {
             />
             <Card
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                text-center text-lg font-medium px-4 py-2 bg-background/90
+                text-center text-sm md:text-lg font-medium px-4 py-2 bg-background/90
                 rounded-full border-2 border-primary"
             >
               No transactions yet.

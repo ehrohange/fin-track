@@ -81,3 +81,9 @@ export interface GoalRes {
     goals: Goal[];
   };
 }
+
+export interface GoalSubmission {
+  goalName: string;
+  goalAmount: number | null;
+  goalDeadline: string;
+}
