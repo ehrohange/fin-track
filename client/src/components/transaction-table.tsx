@@ -144,6 +144,7 @@ const TransactionTable = ({
         <Button
           variant="outline"
           size="sm"
+          className="cursor-pointer"
           disabled={currentPage === 1}
           onClick={() => setCurrentPage((p) => p - 1)}
         >
@@ -161,6 +162,7 @@ const TransactionTable = ({
         <Button
           variant="outline"
           size="sm"
+          className="cursor-pointer"
           disabled={currentPage === totalPages}
           onClick={() => setCurrentPage((p) => p + 1)}
         >

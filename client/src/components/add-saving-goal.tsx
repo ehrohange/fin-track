@@ -144,7 +144,7 @@ const AddSavingGoal = () => {
   return (
     <Dialog>
       <DialogTrigger className="w-full h-full max-w-56">
-        <Card className="bg-primary/80 cursor-pointer h-full group hover:translate-y-[-4px] duration-200">
+        <Card className="bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200">
           <CardContent className="flex items-start justify-between gap-4 my-auto">
             <div className="grid gap-2">
               <h1 className="font-bold text-xl text-left">

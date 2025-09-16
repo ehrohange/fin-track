@@ -251,7 +251,7 @@ const Dashboard = () => {
                 Saving Goals
               </h1>
               <Link to={"/"} className="absolute top-2 sm:top-3 right-0 sm:right-[86px] ">
-                <Card className="py-[5px] hover:bg-primary/90 hover:translate-y-[-2px] duration-200">
+                <Card className="py-[5px] hover:bg-primary/25 hover:translate-y-[-2px] duration-200">
                   <CardContent className="px-3">
                     <div className="flex items-center gap-1">
                       <Eye className="size-4" />
