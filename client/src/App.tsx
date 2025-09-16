@@ -4,12 +4,12 @@ import Navbar from "./components/navbar";
 import Dashboard from "./pages/Dashboard";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
-import Profile from "./pages/Profile";
 import { SidebarProvider } from "./components/ui/sidebar";
 import AppSideBar from "./components/app-sidebar";
 import Footer from "./components/footer";
 import { Toaster } from "sonner";
 import Budget from "./pages/Budget";
+import PrivateRoutes from "./routes/PrivateRoutes";
 
 function App() {
   return (
@@ -24,12 +24,13 @@ function App() {
         <AppSideBar />
         <Navbar />
         <Routes>
-          <Route path="/budget" element={<Budget />} />
+          <Route element={<PrivateRoutes />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/budget" element={<Budget />} />
+          </Route>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
         </Routes>
         <Footer />
       </div>

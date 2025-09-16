@@ -1,6 +1,5 @@
 import type { User, UserState } from "@/lib/types-index";
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: UserState = {
   currentUser: null,
@@ -51,7 +50,7 @@ const userSlice = createSlice({
     },
     deleteUserSuccess: (state) => {
       state.loading = false;
-      state.currentUser = null; // clear user since deleted
+      state.currentUser = null;
       state.error = null;
     },
     deleteUserFailure: (state, action: PayloadAction<string>) => {
@@ -73,4 +72,5 @@ export const {
   deleteUserSuccess,
   deleteUserFailure,
 } = userSlice.actions;
+
 export default userSlice.reducer;
