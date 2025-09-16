@@ -14,6 +14,7 @@ import {
   BanknoteArrowDown,
   BanknoteX,
   ChartColumn,
+  Eye,
   GoalIcon,
   TrendingUp,
 } from "lucide-react";
@@ -26,7 +27,7 @@ import {
   setError as setGoalsError,
 } from "../redux/goal/goalsSlice";
 import AddSavingGoal from "@/components/add-saving-goal";
-import DashboardTable from "@/components/dashboard-table";
+import TransactionTable from "@/components/transaction-table";
 import {
   Carousel,
   CarouselContent,
@@ -80,26 +81,26 @@ const Dashboard = () => {
   const savingGoals = [...currentGoals].reverse();
 
   useEffect(() => {
-  const fetchTransactions = async () => {
-    if (!currentUser?._id) return;
-    try {
-      const res = await api.get(`/finance/transactions/${currentUser._id}`);
+    const fetchTransactions = async () => {
+      if (!currentUser?._id) return;
+      try {
+        const res = await api.get(`/finance/transactions/${currentUser._id}`);
 
-      const sorted = res.data.transactions.sort(
-        (a: Transaction, b: Transaction) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+        const sorted = res.data.transactions.sort(
+          (a: Transaction, b: Transaction) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
 
-      setTransactions(sorted);
-    } catch (error) {
-      toast(
-        <ToastContent icon="error" message="Failed to fetch transactions." />
-      );
-    }
-  };
+        setTransactions(sorted);
+      } catch (error) {
+        toast(
+          <ToastContent icon="error" message="Failed to fetch transactions." />
+        );
+      }
+    };
 
-  fetchTransactions();
-}, [currentUser?._id]);
+    fetchTransactions();
+  }, [currentUser?._id]);
 
   useEffect(() => {
     let income = 0;
@@ -151,11 +152,13 @@ const Dashboard = () => {
     <div className="w-full h-full flex flex-col items-center justify-baseline p-6">
       <section className="w-full grid gap-3 max-w-6xl">
         <h4 className="text-white/80">Hello, {firstName}. Welcome back!</h4>
-        <h1 className="font-bold font-doto text-3xl mt-[-10px]">
+        <h1 className="font-bold font-doto text-2xl sm:text-3xl mt-[-10px]">
           Dashboard Overview
         </h1>
         <Link to={"/budget"} className=" md:hidden">
-        <Button className="w-full">Go to Transactions <ArrowRight /></Button>
+          <Button className="w-full">
+            Go to Transactions <ArrowRight />
+          </Button>
         </Link>
         <div className="grid gap-3">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -243,9 +246,21 @@ const Dashboard = () => {
         <div className="w-full grid gap-3 mt-6">
           <hr />
           {savingGoals.length > 0 ? (
-            <Carousel className="max-w-full overflow-hidden">
-              <h1 className="font-bold font-doto text-3xl mb-1">Saving Goals</h1>
-              <div className="absolute right-[52px] top-4">
+            <Carousel className="max-w-full overflow-hidden pt-2">
+              <h1 className="font-bold font-doto text-2xl sm:text-3xl mb-1">
+                Saving Goals
+              </h1>
+              <Link to={"/"} className="absolute top-2 sm:top-3 right-0 sm:right-[86px] ">
+                <Card className="py-[5px] hover:bg-primary/90 hover:translate-y-[-2px] duration-200">
+                  <CardContent className="px-3">
+                    <div className="flex items-center gap-1">
+                      <Eye className="size-4" />
+                      <h1 className="text-sm">View all</h1>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              <div className="absolute right-[52px] top-7 hidden sm:block">
                 <CarouselPrevious className="cursor-pointer" />
                 <CarouselNext className="cursor-pointer" />
               </div>
@@ -294,7 +309,7 @@ const Dashboard = () => {
                     </Card>
                   </CarouselItem>
                 ))}
-                <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px]">
+                <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px] max-w-56">
                   <AddSavingGoal />
                 </CarouselItem>
               </CarouselContent>
@@ -309,7 +324,10 @@ const Dashboard = () => {
           )}
         </div>
       </section>
-      <DashboardTable transactions={transactions} setTransactions={setTransactions} />
+      <TransactionTable
+        transactions={transactions}
+        setTransactions={setTransactions}
+      />
     </div>
   );
 };

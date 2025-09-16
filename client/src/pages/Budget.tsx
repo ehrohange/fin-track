@@ -32,15 +32,6 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
@@ -51,6 +42,7 @@ import {
   budgetDateSelectSuccess,
   budgetDateSelectFailure,
 } from "../redux/budget/budgetPageDateSlice";
+import TransactionTable from "@/components/transaction-table";
 
 const Budget = () => {
   const [open, setOpen] = useState(false);
@@ -59,14 +51,8 @@ const Budget = () => {
   const [tab, setTab] = useState("income"); // current selected tab
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [goals, setGoals] = useState<Goal[]>([]);
   const dispatch = useDispatch();
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow);
-  const totalPages = Math.ceil(transactions.length / rowsPerPage);
 
   const currentUser = useSelector((state: any) => state.user.currentUser);
 
@@ -199,18 +185,6 @@ const Budget = () => {
   // ✅ filter categories based on tab
   const filteredCategories = categories.filter((c) => c.type === tab);
 
-  const toPeso = (num: number) => {
-    return num.toLocaleString("en-PH", {
-      style: "currency",
-      currency: "PHP",
-      minimumFractionDigits: 2,
-    });
-  };
-
-  const capitalizeFirstLetter = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
   return (
     <div className="min-h-[calc(100vh-68px)] w-full flex flex-col justify-baseline items-start lg:items-center px-4 py-6 lg:min-h-0 lg:flex-grow">
       <section className="w-full max-w-6xl grid">
@@ -260,7 +234,11 @@ const Budget = () => {
               <div className="flex items-start gap-4">
                 <div
                   className={`flex items-center justify-center size-12 rounded-sm  ${
-                    tab === "expense" ? "bg-destructive/50" : tab === "savings" ? "bg-white/40" : "bg-primary/50"
+                    tab === "expense"
+                      ? "bg-destructive/50"
+                      : tab === "savings"
+                      ? "bg-white/40"
+                      : "bg-primary/50"
                   }`}
                 >
                   <Banknote />
@@ -376,98 +354,20 @@ const Budget = () => {
           </Card>
         </form>
       </section>
-      <section className="w-full mx-auto sm:max-w-4xl lg:max-w-6xl xl:max-w-6xl grid mt-6">
-        <div className="w-full uppercase flex flex-col items-center sm:flex-row sm:gap-6 text-4xl justify-center my-2 lg:justify-start">
-          <Banknote className="size-7 mr-[-10px] hidden md:block" />
-          <h1 className="font-doto font-bold text-center sm:text-left">transactions for</h1>
-          <h1 className="font-doto font-bold">
-            {date ? formatDate(date) : "Select a date"}
+      {transactions.length !== 0 ? (
+        <TransactionTable
+          transactions={transactions}
+          setTransactions={setTransactions}
+          total={total}
+          date={formatDate(date)}
+        />
+      ) : (
+        <div className="w-full mx-auto sm:max-w-4xl lg:max-w-6xl xl:max-w-6xl grid mt-6">
+          <hr className="mb-4 h-2 mt-3" />
+          <h4 className="text-white/80 text-left w-full">These are all your</h4>
+          <h1 className="font-bold font-doto text-3xl w-full text-left">
+            Transactions for {formatDate(date)}
           </h1>
-        </div>
-        <hr />
-        {transactions.length !== 0 ? (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Desc</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentRows.map((item) => (
-                  <TableRow key={item._id}>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell>
-                      {capitalizeFirstLetter(item.categoryId.type)}
-                    </TableCell>
-                    <TableCell>{item.categoryId.name}</TableCell>
-                    <TableCell
-                      className={
-                        cn(
-                          item.categoryId.type === "expense" &&
-                            "text-destructive",
-                          item.categoryId.type === "savings" && "text-white",
-                          item.categoryId.type === "income" &&
-                            "text-primary font-semibold"
-                        ) + " text-right"
-                      }
-                    >
-                      {item.categoryId.type === "income"
-                        ? `+${toPeso(item.amount)}`
-                        : `-${toPeso(item.amount)}`}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={3}>Total Balance</TableCell>
-                  <TableCell
-                    className={`font-bold ${
-                      total > 0
-                        ? "text-primary"
-                        : total < 0
-                        ? "text-destructive"
-                        : "text-white"
-                    } text-right`}
-                  >
-                    {toPeso(total)}
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
-            <div className="w-full flex items-center justify-center gap-4 mt-4 max-w-lg mx-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-              >
-                Prev
-              </Button>
-
-              <p className="text-sm text-white/85 flex-grow text-center">
-                Page{" "}
-                <span className="text-primary font-bold text-[15px]">
-                  {currentPage}
-                </span>{" "}
-                of {totalPages}
-              </p>
-
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </>
-        ) : (
           <div className="relative w-full max-w-4xl mx-auto">
             <img
               src="/emptytrans.webp"
@@ -481,8 +381,8 @@ const Budget = () => {
               No transactions yet.
             </Card>
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </div>
   );
 };

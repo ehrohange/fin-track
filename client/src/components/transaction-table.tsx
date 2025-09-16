@@ -3,6 +3,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -17,12 +18,19 @@ import ToastContent from "./toastcontent";
 import { toast } from "sonner";
 import DeleteTransaction from "./delete-transaction";
 
-interface DashboardTableProps {
+interface TransactionTableProps {
   transactions: Transaction[];
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  total?: number;
+  date?: string;
 }
 
-const DashboardTable = ({transactions, setTransactions} : DashboardTableProps) => {
+const TransactionTable = ({
+  transactions,
+  setTransactions,
+  total,
+  date,
+}: TransactionTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -39,27 +47,6 @@ const DashboardTable = ({transactions, setTransactions} : DashboardTableProps) =
     const year = d.getFullYear();
     return `${month} ${day} ${year}`; // e.g. "Aug 25 2025"
   };
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const res = await api.get(`/finance/transactions/${currentUser?._id}`);
-
-        const sorted = res.data.transactions.sort(
-          (a: Transaction, b: Transaction) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-
-        setTransactions(sorted);
-      } catch (error) {
-        toast(
-          <ToastContent icon="error" message="Failed to fetch transactions." />
-        );
-      }
-    };
-
-    fetchTransactions();
-  }, []);
 
   const toPeso = (num: number) => {
     return num.toLocaleString("en-PH", {
@@ -80,7 +67,7 @@ const DashboardTable = ({transactions, setTransactions} : DashboardTableProps) =
     <section className="w-full max-w-6xl mt-6">
       <hr className="mb-4 mt-3" />
       <h4 className="text-white/80">These are all your</h4>
-      <h1 className="font-bold font-doto text-3xl">Transactions</h1>
+      <h1 className="font-bold font-doto text-2xl sm:text-3xl">Transactions {date && `for ${date}`}</h1>
       <Table>
         <TableHeader>
           <TableRow>
@@ -132,6 +119,26 @@ const DashboardTable = ({transactions, setTransactions} : DashboardTableProps) =
             </TableRow>
           ))}
         </TableBody>
+        {total && (
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={4}>Total Balance</TableCell>
+              <TableCell
+              colSpan={1}
+                className={`font-bold ${
+                  total > 0
+                    ? "text-primary"
+                    : total < 0
+                    ? "text-destructive"
+                    : "text-white"
+                } text-right`}
+              >
+                {toPeso(total)}
+              </TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
       <div className="w-full flex items-center justify-center gap-4 mt-4 max-w-lg mx-auto">
         <Button
@@ -164,4 +171,4 @@ const DashboardTable = ({transactions, setTransactions} : DashboardTableProps) =
   );
 };
 
-export default DashboardTable;
+export default TransactionTable;

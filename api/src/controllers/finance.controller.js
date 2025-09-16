@@ -84,6 +84,16 @@ export const createTransaction = async (req, res, next) => {
       date: parsedDate,
     });
 
+    await Goal.findOneAndUpdate(
+      {
+        goalName: description,
+        categoryId,
+        userId,
+        active: true,
+      },
+      { $inc: { amount: amount } }
+    );
+
     const populatedTransaction = await Transaction.findById(transaction._id)
       .populate("categoryId", "name type color")
       .lean(); // return a plain JS object instead of a Mongoose doc

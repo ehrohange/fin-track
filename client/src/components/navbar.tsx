@@ -21,9 +21,7 @@ const Navbar = () => {
   const location = useLocation();
   const path = location.pathname;
   const pathLastPart = path.substring(path.lastIndexOf("/") + 1);
-  const currentUser = useSelector(
-    (state: RootState) => state.user.currentUser
-  );
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
   return (
     <NavigationMenu className="w-full block max-w-none" viewport={false}>
       <NavigationMenuList className="flex mx-auto items-center justify-between w-full max-w-6xl py-4 px-4">
@@ -52,11 +50,13 @@ const Navbar = () => {
                   </Link>
                 </NavigationMenuItem>
               )}
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link to="/dashboard">Dashboard</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+              {pathLastPart !== "dashboard" && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/dashboard">Dashboard</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
               <NavigationMenuItem className="relative">
                 <NavigationMenuTrigger className="flex flex-row items-center gap-2 w-[200px]">
                   <Avatar className="size-8">
