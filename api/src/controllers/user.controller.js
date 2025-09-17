@@ -48,7 +48,6 @@ export const updateUserDetails = async (req, res, next) => {
 
     // Remove password from payload
     const { password: hashedPassword, ...rest } = user._doc;
-    console.log("User deconstructed");
     // Create new token with updated user info
     const access_token = jwt.sign(rest, process.env.JWT_SECRET, {
       expiresIn: "4h",

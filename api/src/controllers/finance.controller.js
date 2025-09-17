@@ -310,3 +310,27 @@ export const getGoals = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateGoal = async (req, res, next) => {
+  try {
+    const { goalId } = req.params;
+    const { goalAmount, goalDeadline, active } = req.body;
+
+    const updateFields = {};
+    if (goalAmount !== undefined) updateFields.goalAmount = goalAmount;
+    if (goalDeadline !== undefined) updateFields.goalDeadline = goalDeadline;
+    if (active !== undefined) updateFields.active = active;
+
+    const updatedGoal = await Goal.findByIdAndUpdate(
+      goalId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+    if (!updatedGoal) return next(errorHandler(404, "Goal was not found."));
+    return res
+      .status(200)
+      .json({ message: "Goal updated!", updatedGoal: updatedGoal });
+  } catch (error) {
+    next(error);
+  }
+};

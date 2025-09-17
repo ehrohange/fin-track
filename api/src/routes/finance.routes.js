@@ -9,6 +9,7 @@ import {
   getTransactionsByUserIdAndDate,
   deleteTransaction,
   getGoals,
+  updateGoal,
 } from "../controllers/finance.controller.js";
 
 const router = Router();
@@ -22,5 +23,6 @@ router.get("/transactionsByDate/:userId", getTransactionsByUserIdAndDate);
 router.delete("/transaction/:userId/:transactionId", deleteTransaction);
 router.post("/goal/:userId/:categoryId", createGoal);
 router.get("/goals/:userId", getGoals);
+router.patch("/goal/:goalId", updateGoal);
 
 export default router;
