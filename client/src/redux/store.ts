@@ -4,13 +4,13 @@ import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
 import userReducer from "./user/userSlice";
-import budgetDateReducer from "./budget/budgetPageDateSlice";
+import transactionDateReducer from "./transaction/transactionPageDateSlice";
 import goalsReducer from "./goal/goalsSlice";
 import { resetState } from "./resetActions";
 
 const appReducer = combineReducers({
   user: userReducer,
-  budgetDate: budgetDateReducer,
+  transactionDate: transactionDateReducer,
   goals: goalsReducer,
 });
 

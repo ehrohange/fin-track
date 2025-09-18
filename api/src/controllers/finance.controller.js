@@ -125,8 +125,6 @@ export const getTransactionsByUserId = async (req, res, next) => {
       "categoryId",
       "name type color"
     );
-    if (transaction.length === 0)
-      return next(errorHandler(404, "No transactions found."));
     return res.status(200).json({ transactions: transaction });
   } catch (error) {
     next(error);

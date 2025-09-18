@@ -37,14 +37,19 @@ import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
 import { type Goal, type Transaction } from "@/lib/types-index";
 import { useDispatch } from "react-redux";
-import {
-  budgetDateSelectStart,
-  budgetDateSelectSuccess,
-  budgetDateSelectFailure,
-} from "../redux/budget/budgetPageDateSlice";
 import TransactionTable from "@/components/transaction-table";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
+import { transactionDateSelectFailure, transactionDateSelectStart, transactionDateSelectSuccess } from "@/redux/transaction/transactionPageDateSlice";
 
-const Budget = () => {
+const Transactions = () => {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [value, setValue] = useState(""); // selected category
@@ -57,7 +62,7 @@ const Budget = () => {
   const currentUser = useSelector((state: any) => state.user.currentUser);
 
   const currentDate = useSelector(
-    (state: any) => state.budgetDate.currentSelectedDate
+    (state: any) => state.transactionDate.currentSelectedDate
   );
 
   // ✅ initial value: today
@@ -66,7 +71,7 @@ const Budget = () => {
   });
   const [formData, setFormData] = useState({
     description: "",
-    amount: 1,
+    amount: null,
   });
 
   const formatDate = (d: Date | undefined) => {
@@ -109,7 +114,7 @@ const Budget = () => {
       setTransactions((prev) => [res.data.transaction, ...prev]);
 
       // ✅ reset form
-      setFormData({ description: "", amount: 1 });
+      setFormData({ description: "", amount: null });
       setValue("");
     } catch (error) {
       toast(
@@ -125,11 +130,11 @@ const Budget = () => {
   }, [currentDate]);
 
   useEffect(() => {
-    dispatch(budgetDateSelectStart());
+    dispatch(transactionDateSelectStart());
     try {
-      dispatch(budgetDateSelectSuccess(formatDate(date)));
+      dispatch(transactionDateSelectSuccess(formatDate(date)));
     } catch (error) {
-      dispatch(budgetDateSelectFailure("Error updating date."));
+      dispatch(transactionDateSelectFailure("Error updating date."));
     }
   }, [date]);
 
@@ -188,6 +193,24 @@ const Budget = () => {
   return (
     <div className="min-h-[calc(100vh-68px)] w-full flex flex-col justify-baseline items-start lg:items-center px-4 py-6 lg:min-h-0 lg:flex-grow">
       <section className="w-full max-w-6xl grid">
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link
+                  className="text-white/85 hover:underline hover:underline-offset-2 duration-200"
+                  to={"/"}
+                >
+                  Dashboard
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Add Transactions</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <form
           className="w-full flex flex-col items-center gap-5 lg:flex-row lg:justify-center lg:items-start"
           onSubmit={handleAddTransaction}
@@ -245,7 +268,7 @@ const Budget = () => {
                 </div>
 
                 <div className="grid gap-2 text-left mt-[2px]">
-                  <CardTitle>Transaction</CardTitle>
+                  <CardTitle>Add Transaction</CardTitle>
                   <CardDescription>
                     Enter your transaction details here.
                   </CardDescription>
@@ -254,6 +277,18 @@ const Budget = () => {
             </CardHeader>
 
             <hr className="mt-[-6px]" />
+            <div className="grid gap-3">
+              <Label htmlFor="description">Transaction description</Label>
+              <Input
+                type="text"
+                id="description"
+                placeholder="Transaction description"
+                required
+                className="w-full"
+                value={formData.description}
+                onChange={handleChange}
+              />
+            </div>
             <Tabs
               defaultValue="income"
               className="w-full grid gap-5"
@@ -321,27 +356,15 @@ const Budget = () => {
                 </Popover>
 
                 <div className="grid gap-3">
-                  <Label htmlFor="description">Transaction description</Label>
-                  <Input
-                    type="text"
-                    id="description"
-                    placeholder="Transaction description"
-                    required
-                    className="w-full"
-                    value={formData.description}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="grid gap-3">
                   <Label htmlFor="amount">Amount</Label>
                   <Input
                     type="number"
                     id="amount"
-                    placeholder="Amount"
+                    placeholder="Amount (₱)"
                     min={1}
                     step="0.01"
                     required
-                    value={formData.amount}
+                    value={formData.amount ?? ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -387,4 +410,4 @@ const Budget = () => {
   );
 };
 
-export default Budget;
+export default Transactions;

@@ -53,7 +53,7 @@ export interface Transaction {
   __v?: number;
 }
 
-export interface BudgetDateState {
+export interface TransactionDateState {
   currentSelectedDate: string | null;
   loading: boolean;
   error: string | null;
@@ -63,6 +63,7 @@ export interface Goal {
   _id: string;
   userId: string;
   categoryId: {
+    _id?: string;
     color: string;
     type: string;
     name: string;

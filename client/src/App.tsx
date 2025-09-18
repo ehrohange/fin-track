@@ -8,10 +8,40 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import AppSideBar from "./components/app-sidebar";
 import Footer from "./components/footer";
 import { Toaster } from "sonner";
-import Budget from "./pages/Budget";
 import PrivateRoutes from "./routes/PrivateRoutes";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "./redux/store";
+import { useEffect } from "react";
+import { logout } from "./redux/user/userSlice";
+import { resetState } from "./redux/resetActions";
+import HomeAndLoginRoutes from "./routes/HomeAndLoginRoutes";
+import Transactions from "./pages/Transactions";
+
+interface JwtPayload {
+  exp?: number;
+}
 
 function App() {
+  const dispatch = useDispatch();
+  const currentUser: JwtPayload | null = useSelector(
+    (state: RootState) => state.user.currentUser
+  );
+
+  useEffect(() => {
+    if (currentUser?.exp) {
+      try {
+        const isExpired = currentUser.exp * 1000 < Date.now();
+        if (isExpired) {
+          dispatch(logout()); // ✅ clears redux + persist
+          dispatch(resetState());
+        }
+      } catch {
+        dispatch(logout());
+        dispatch(resetState());
+      }
+    }
+  }, [dispatch, currentUser]);
+
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="relative w-full flex flex-col overflow-hidden">
@@ -26,11 +56,13 @@ function App() {
         <Routes>
           <Route element={<PrivateRoutes />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/budget" element={<Budget />} />
+            <Route path="/transactions" element={<Transactions />} />
           </Route>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route element={<HomeAndLoginRoutes />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Route>
         </Routes>
         <Footer />
       </div>

@@ -77,7 +77,7 @@ const SignUp = () => {
       }
 
       // ✅ Register new user
-      const res = await api.post("/api/users", formData);
+      const res = await api.post("/users", formData);
 
       if (res.status === 201) {
         toast(

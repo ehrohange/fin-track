@@ -7,9 +7,10 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { ChartSpline, ChevronRight, LogIn, PlusCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
@@ -25,9 +26,12 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 
 const AppSideBar = () => {
-  const currentUser = useSelector(
-    (state: RootState) => state.user.currentUser
-  );
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
+
+  const location = useLocation();
+  const path = location.pathname;
+  const pathLastPart = path.substring(path.lastIndexOf("/") + 1);
+  const { setOpenMobile } = useSidebar()
 
   return (
     <Sidebar className="md:hidden">
@@ -92,7 +96,7 @@ const AppSideBar = () => {
           <SidebarGroup className="mt-[-10px] p-0">
             <SidebarGroupLabel className="mb-2">User</SidebarGroupLabel>
             <SidebarGroupContent className="flex flex-col gap-4 px-2">
-              <Link to={"/budget"}>
+              <Link to={"/login"} onClick={() => setOpenMobile(false)}>
                 <Button className="w-full flex items-center justify-center">
                   <LogIn />
                   <span>Login</span>
@@ -110,22 +114,26 @@ const AppSideBar = () => {
                 Application
               </SidebarGroupLabel>
               <SidebarGroupContent className="flex flex-col gap-4 px-2">
-                <Link to={"/budget"}>
-                  <Button className="w-full flex items-center justify-center">
-                    <PlusCircle />
-                    <span>Add Budget</span>
-                  </Button>
-                </Link>
-                <Link to={"/dashboard"}>
-                  <Button
-                    className="w-full flex items-center justify-between"
-                    variant={"ghost"}
-                  >
-                    <ChartSpline />
-                    <span>Dashboard</span>
-                    <ChevronRight />
-                  </Button>
-                </Link>
+                {pathLastPart !== "transactions" && (
+                    <Link to={"/transactions"} onClick={() => setOpenMobile(false)} >
+                      <Button className="w-full flex items-center justify-center">
+                        <PlusCircle />
+                        <span>Transactions</span>
+                      </Button>
+                    </Link>
+                )}
+                {pathLastPart !== "dashboard" && (
+                  <Link to={"/dashboard"} onClick={() => setOpenMobile(false)}>
+                    <Button
+                      className="w-full flex items-center justify-between"
+                      variant={"ghost"}
+                    >
+                      <ChartSpline />
+                      <span>Dashboard</span>
+                      <ChevronRight />
+                    </Button>
+                  </Link>
+                )}
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup />

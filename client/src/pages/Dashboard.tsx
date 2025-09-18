@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/carousel";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SavingGoal from "@/components/saving-goal";
 
 const Dashboard = () => {
   const [total, setTotal] = useState<number>(0);
@@ -149,13 +150,13 @@ const Dashboard = () => {
 
   const firstName = currentUser?.fullName.split(" ")[0] || "User";
   return (
-    <div className="w-full h-full flex flex-col items-center justify-baseline p-6">
+    <div className="w-full h-full flex flex-col items-center justify-baseline p-4">
       <section className="w-full grid gap-3 max-w-6xl">
         <h4 className="text-white/80">Hello, {firstName}. Welcome back!</h4>
         <h1 className="font-bold font-doto text-2xl sm:text-3xl mt-[-10px]">
           Dashboard Overview
         </h1>
-        <Link to={"/budget"} className=" md:hidden">
+        <Link to={"/transactions"} className=" md:hidden">
           <Button className="w-full">
             Go to Transactions <ArrowRight />
           </Button>
@@ -250,7 +251,10 @@ const Dashboard = () => {
               <h1 className="font-bold font-doto text-2xl sm:text-3xl mb-1">
                 Saving Goals
               </h1>
-              <Link to={"/"} className="absolute top-2 sm:top-3 right-0 sm:right-[86px] ">
+              <Link
+                to={"/"}
+                className="absolute top-2 sm:top-3 right-0 sm:right-[86px] "
+              >
                 <Card className="py-[5px] hover:bg-primary/25 hover:translate-y-[-2px] duration-200">
                   <CardContent className="px-3">
                     <div className="flex items-center gap-1">
@@ -270,43 +274,7 @@ const Dashboard = () => {
                     key={goal._id}
                     className="basis-7/8 sm:basis-2/3 lg:basis-1/3"
                   >
-                    <Card className="relative group hover:translate-y-[-4px] duration-200 cursor-pointer">
-                      <div className="flex justify-between items-start mx-4">
-                        <div className="grid gap-2 mt-[2px]">
-                          <CardTitle className="select-none">
-                            {goal.goalName}
-                          </CardTitle>
-                          <CardDescription className="select-none">
-                            {goal.categoryId.name}
-                          </CardDescription>
-                        </div>
-                        <div
-                          className={`bg-primary/40 select-none rounded-sm size-12 flex items-center justify-center group-hover:bg-primary/60 duration-200`}
-                        >
-                          <GoalIcon />
-                        </div>
-                      </div>
-                      <CardContent>
-                        <div className="relative w-full h-6 rounded-sm bg-primary/15 mt-[-8px] select-none">
-                          <div
-                            className={`bg-primary/40 h-full rounded-sm select-none`}
-                            style={{
-                              width: `${
-                                (goal.amount / goal.goalAmount) * 100
-                              }%`,
-                            }}
-                          ></div>
-                          <p className="absolute top-0 left-0 text-center w-full text-xs mt-[4px] select-none">
-                            {`${formatCompactPeso(
-                              goal.amount
-                            )} out of ${formatCompactPeso(goal.goalAmount)}`}
-                          </p>
-                        </div>
-                        <p className="text-xs text-center mt-2 mb-[-6px] text-destructive select-none">
-                          Save until {goal.goalDeadline}
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <SavingGoal key={goal._id} goal={goal} formatCompactPeso={formatCompactPeso} />
                   </CarouselItem>
                 ))}
                 <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px] max-w-56">

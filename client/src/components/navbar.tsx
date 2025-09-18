@@ -40,12 +40,12 @@ const Navbar = () => {
         <NavigationMenuList className="md:flex items-center space-x-4 hidden">
           {currentUser ? (
             <>
-              {pathLastPart !== "budget" && (
+              {pathLastPart !== "transaction" && (
                 <NavigationMenuItem>
-                  <Link to={"/budget"}>
+                  <Link to={"/transactions"}>
                     <Button>
                       <PlusCircle />
-                      <span>Add Budget</span>
+                      <span>Transactions</span>
                     </Button>
                   </Link>
                 </NavigationMenuItem>
