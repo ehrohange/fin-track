@@ -69,7 +69,7 @@ export interface Goal {
     name: string;
   };
   amount: number;
-  goalName: number;
+  goalName: string;
   goalAmount: number;
   goalStartDate: string;
   goalDeadline: string;
@@ -80,6 +80,13 @@ export interface GoalRes {
   data: {
     message?: string;
     goals: Goal[];
+  };
+}
+
+export interface GoalSingleRes {
+  data: {
+    message?: string;
+    goal: Goal;
   };
 }
 

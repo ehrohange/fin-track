@@ -312,12 +312,11 @@ export const getGoals = async (req, res, next) => {
 export const updateGoal = async (req, res, next) => {
   try {
     const { goalId } = req.params;
-    const { goalAmount, goalDeadline, active } = req.body;
+    const { goalAmount, goalDeadline } = req.body;
 
     const updateFields = {};
     if (goalAmount !== undefined) updateFields.goalAmount = goalAmount;
     if (goalDeadline !== undefined) updateFields.goalDeadline = goalDeadline;
-    if (active !== undefined) updateFields.active = active;
 
     const updatedGoal = await Goal.findByIdAndUpdate(
       goalId,
@@ -328,6 +327,50 @@ export const updateGoal = async (req, res, next) => {
     return res
       .status(200)
       .json({ message: "Goal updated!", updatedGoal: updatedGoal });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deactivateGoal = async (req, res, next) => {
+  try {
+    const { goalId } = req.params;
+
+    const archivedGoal = await Goal.findByIdAndUpdate(
+      goalId,
+      {
+        $set: {
+          active: false,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!archivedGoal) return next(errorHandler(404, "Goal was not found."));
+
+    return res.status(200).json({ message: "Goal archived!", goal: archivedGoal });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const activateGoal = async (req, res, next) => {
+  try {
+    const { goalId } = req.params;
+
+    const unarchivedGoal = await Goal.findByIdAndUpdate(
+      goalId,
+      {
+        $set: {
+          active: true,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!unarchivedGoal) return next(errorHandler(404, "Goal was not found."));
+
+    return res.status(200).json({ message: "Goal unarchived!", goal: unarchivedGoal });
   } catch (error) {
     next(error);
   }

@@ -7,24 +7,43 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Card, CardContent, CardDescription, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import {
   BanknoteArrowUp,
   CalendarIcon,
   CheckCircle,
+  CircleFadingPlus,
   GoalIcon,
+  Loader2,
+  Package2,
+  PackageOpen,
+  Save,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useState,
+  type ButtonHTMLAttributes,
+  type ChangeEvent,
+  type FormEvent,
+  type MouseEvent,
+} from "react";
 import { toast } from "sonner";
 import ToastContent from "./toastcontent";
 import api from "@/lib/axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
+import type { AppDispatch } from "@/redux/store";
 
 type SavingGoalProps = {
   goal: Goal;
@@ -33,53 +52,134 @@ type SavingGoalProps = {
 
 const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
   const currentUser = useSelector((state: any) => state.user.currentUser);
-  const date = new Date();
+  const today = new Date();
+  const [processing, setProcessing] = useState<boolean>(false);
+  const dispatch = useDispatch<AppDispatch>();
 
   const formatDate = (d: Date | undefined) => {
     if (!d) return "";
     const month = d.toLocaleString("en-US", { month: "short" });
     const day = d.getDate();
     const year = d.getFullYear();
-    return `${month} ${day} ${year}`; // e.g. "Aug 25 2025"
+    return `${month} ${day} ${year}`;
   };
 
   const [formData, setFormData] = useState<any>({
     description: goal.goalName,
     amount: null,
-    date: formatDate(date),
+    date: formatDate(today),
   });
 
-  const [goalDeadline, setGoalDeadline] = useState<any>(goal.goalDeadline);
+  const [active, setActive] = useState<boolean>(goal.active);
 
   const [goalData, setGoalData] = useState<any>({
     goalAmount: goal.goalAmount,
-    goalDeadline: goalDeadline,
-    active: goal.active,
+    goalDeadline: goal.goalDeadline ? new Date(goal.goalDeadline) : undefined,
   });
+
+  const handleUpdateGoal = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      setProcessing(true);
+      if (goalData.goalAmount <= 0 || goalData.goalAmount === null) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Goal amount cannot be 0 or less."
+          />
+        );
+        setProcessing(false);
+        return;
+      }
+      const res = await api.patch(`/finance/goal/${goal._id}`, goalData);
+      toast(<ToastContent icon="success" message={res.data.message} />);
+      setProcessing(false);
+    } catch (error) {
+      toast(<ToastContent icon="error" message="Error updating goal." />);
+      setProcessing(false);
+    }
+  };
+
+  const handleArchiveGoal = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    try {
+      setProcessing(true);
+      if (!active) {
+        toast(
+          <ToastContent icon="error" message="This goal is already archived." />
+        );
+        setProcessing(false);
+        return;
+      }
+      const res = await api.patch(`/finance/goal/deactivate/${goal._id}`);
+      if (res.status === 200) {
+        toast(<ToastContent icon="success" message="Goal archived!" />);
+        setProcessing(false); // ✅ stop spinner
+      }
+    } catch (error) {
+      setProcessing(false);
+      toast(
+        <ToastContent
+          icon="error"
+          message="Error archiving goal. Please try again."
+        />
+      );
+    }
+  };
+
+  const handleUnarchiveGoal = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    try {
+      setProcessing(true);
+      if (active) {
+        toast(
+          <ToastContent icon="error" message="This goal is already active." />
+        );
+        setProcessing(false);
+        return;
+      }
+      const res = await api.patch(`/finance/goal/activate/${goal._id}`);
+      if (res.status === 200) {
+        toast(<ToastContent icon="success" message="Goal unarchived!" />);
+        setProcessing(false); // ✅ stop spinner
+      }
+    } catch (error) {
+      setProcessing(false);
+      toast(
+        <ToastContent
+          icon="error"
+          message="Error unarchiving goal. Please try again."
+        />
+      );
+    }
+  };
 
   const handleAddTransaction = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
+      setProcessing(true);
       if (!formData.amount || !formData.description) {
-        return toast(
-          <ToastContent icon="error" message="All fields are required." />
-        );
+        setProcessing(false);
+        toast(<ToastContent icon="error" message="All fields are required." />);
+        return;
       }
 
       const res = await api.post(
         `/finance/transaction/${currentUser._id}/${goal.categoryId._id}`,
         {
           ...formData,
-          date: formatDate(date), // backend expects "Aug 30 2025"
+          date: formatDate(today),
         }
       );
 
       toast(<ToastContent icon="success" message={res.data.message} />);
-
-      // ✅ reset form
-      setFormData({ ...formData, amount: null });
-    } catch (error) {
+      setFormData({ ...formData, amount: null }); // reset form
+      setProcessing(false);
+    } catch {
+      setProcessing(false);
       toast(
         <ToastContent icon="error" message="Failed to create transaction." />
       );
@@ -94,167 +194,409 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
     });
   };
 
+  const handleAmountGoalChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setGoalData({
+      ...goalData,
+      [e.target.id]: parseFloat(e.target.value),
+    });
+  };
+
+  // ✅ Helper: compare dates by year, month, and day only
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  // ✅ Compute deadline status
+  const deadlineDate = new Date(goal.goalDeadline);
+  const deadlineToday = isSameDay(deadlineDate, today);
+
+  let deadlineMessage: React.ReactNode;
+  if (goal.amount >= goal.goalAmount) {
+    deadlineMessage = (
+      <span className="flex items-center justify-center gap-1 font-semibold">
+        <CheckCircle className="size-3.5" /> Goal achieved!
+      </span>
+    );
+  } else if (deadlineToday) {
+    deadlineMessage = "Deadline today!";
+  } else if (deadlineDate < today) {
+    deadlineMessage = "Deadline exceeded. Extend?";
+  } else {
+    deadlineMessage = `Save until ${goal.goalDeadline}`;
+  }
+
+  // ✅ Shared condition for destructive theme (only past deadlines, not today)
+  const isPastDeadline =
+    deadlineDate < today && !deadlineToday && goal.amount < goal.goalAmount;
+
   return (
     <Dialog>
       <DialogTrigger className="w-full">
-        <Card className="relative group hover:translate-y-[-4px] duration-200 cursor-pointer">
+        <Card
+          className={`relative group hover:translate-y-[-4px] duration-200 cursor-pointer ${
+            isPastDeadline ? "border-destructive/60" : "border-primary/60"
+          }`}
+        >
           <div className="flex justify-between items-start mx-4">
             <div className="grid gap-2 mt-[2px] text-left">
               <CardTitle className="select-none">{goal.goalName}</CardTitle>
-              <CardDescription className="select-none">
+              <CardDescription
+                className={`select-none ${
+                  isPastDeadline ? "text-destructive" : "text-primary"
+                }`}
+              >
                 {goal.categoryId.name}
               </CardDescription>
             </div>
             <div
-              className={`bg-primary/40 select-none rounded-sm size-12 flex items-center justify-center group-hover:bg-primary/60 duration-200`}
+              className={`${
+                isPastDeadline ? "bg-destructive/40" : "bg-primary/40"
+              } select-none rounded-sm size-12 flex items-center justify-center group-hover:bg-primary/60 duration-200`}
             >
               <GoalIcon />
             </div>
           </div>
           <CardContent>
-            <div className="relative w-full h-6 rounded-sm bg-primary/15 mt-[-8px] select-none">
+            <div
+              className={`relative w-full h-6 rounded-sm ${
+                isPastDeadline ? "bg-destructive/15" : "bg-primary/15"
+              } mt-[-8px] select-none`}
+            >
               <div
-                className={`bg-primary/40 h-full rounded-sm select-none`}
+                className={`h-full rounded-sm select-none ${
+                  isPastDeadline ? "bg-destructive/40" : "bg-primary/40"
+                }`}
                 style={{
                   width: `${Math.min(
                     (goal.amount / goal.goalAmount) * 100,
                     100
                   )}%`,
                 }}
-              ></div>
+              />
               <p className="absolute top-0 left-0 text-center w-full text-xs mt-[4px] select-none">
                 {`${formatCompactPeso(goal.amount)} out of ${formatCompactPeso(
                   goal.goalAmount
                 )}`}
               </p>
             </div>
-            <p className="text-xs text-center mt-2 mb-[-6px] text-destructive select-none">
-              Save until {goal.goalDeadline}
+            <p
+              className={`text-xs text-center mt-2 mb-[-10px] ${
+                goal.amount >= goal.goalAmount
+                  ? "text-primary"
+                  : deadlineToday
+                  ? "text-destructive"
+                  : isPastDeadline
+                  ? "text-destructive"
+                  : "text-white/80"
+              } select-none`}
+            >
+              {deadlineMessage}
             </p>
           </CardContent>
         </Card>
       </DialogTrigger>
-      <DialogContent>
+
+      <DialogContent
+        className={`${
+          isPastDeadline ? "border-destructive/80" : "border-primary/60"
+        }`}
+      >
         <DialogHeader>
           <div className="flex items-start gap-4">
-            <div className="size-12 bg-primary/50 rounded-sm flex items-center justify-center">
+            <div
+              className={`size-12 ${
+                isPastDeadline ? "bg-destructive/40" : "bg-primary/40"
+              } rounded-sm flex items-center justify-center`}
+            >
               <GoalIcon />
             </div>
             <div className="grid gap-2 pt-[2px] text-left">
               <DialogTitle>{goal.goalName}</DialogTitle>
-
-              <DialogDescription className="text-sm text-primary">
+              <DialogDescription
+                className={`text-sm ${
+                  isPastDeadline ? "text-destructive" : "text-primary"
+                }`}
+              >
                 Category: {goal.categoryId.name}
               </DialogDescription>
             </div>
           </div>
-          <div className="relative w-full h-6 rounded-sm bg-primary/15 mt-2 select-none">
+
+          <div
+            className={`relative w-full h-6 rounded-sm ${
+              isPastDeadline ? "bg-destructive/15" : "bg-primary/15"
+            } mt-2 select-none`}
+          >
             <div
-              className={`bg-primary/40 h-full rounded-sm select-none`}
+              className={`${
+                isPastDeadline ? "bg-destructive/40" : "bg-primary/40"
+              } h-full rounded-sm select-none`}
               style={{
                 width: `${Math.min(
                   (goal.amount / goal.goalAmount) * 100,
                   100
                 )}%`,
               }}
-            ></div>
+            />
             <p className="absolute top-0 left-0 text-center w-full text-xs mt-[4px] select-none">
               {`${formatCompactPeso(goal.amount)} out of ${formatCompactPeso(
                 goal.goalAmount
               )}`}
             </p>
           </div>
+
           <div className="flex items-center justify-between mt-[-0.5rem]">
             <p
               className={`text-xs text-left mt-2 mb-[-6px] select-none ${
                 goal.amount >= goal.goalAmount
-                  ? "text-primary/80 font-semibold uppercase"
-                  : "text-destructive"
+                  ? "text-primary/80 font-semibold"
+                  : deadlineToday
+                  ? "text-destructive"
+                  : isPastDeadline
+                  ? "text-destructive"
+                  : "text-white/80"
               }`}
             >
-              {goal.amount >= goal.goalAmount ? (
-                <div className="flex items-center gap-1 font-semibold">
-                  <CheckCircle className="size-3.5" /> Goal achieved!
-                </div>
-              ) : (
-                `Save until ${goal.goalDeadline}`
-              )}
+              {deadlineMessage}
             </p>
-            {/* <Button
-              variant={"link"}
-              className="px-0 pt-3 pb-0 flex items-center cursor-pointer text-white/75 hover:text-white hover:translate-y-[-2px] duration-200"
-            >
-              <PencilLine className="size-3.5 mt-[1px]"/> Edit Goal
-            </Button> */}
           </div>
         </DialogHeader>
         <hr />
-        <Tabs defaultValue="trans">
-          <TabsList className="w-full mb-2">
-            <TabsTrigger value="trans">Add Amount</TabsTrigger>
-            <TabsTrigger value="edit">Update Goal</TabsTrigger>
-          </TabsList>
-          <TabsContent value="trans">
-            <form className="grid gap-5" onSubmit={handleAddTransaction}>
-              <div className="grid gap-3">
-                <Label htmlFor="amount">Amount to be added</Label>
-                <Input
-                  type="number"
-                  id="amount"
-                  placeholder="Amount (₱)"
-                  value={formData.amount ?? ""}
-                  onChange={handleChange}
-                  min={1}
-                  required
-                />
-              </div>
-              <Button type="submit">
-                <BanknoteArrowUp />
-                Add to Goal
-              </Button>
-            </form>
-          </TabsContent>
-          <TabsContent value="edit">
-            <form className="grid gap-5">
-              <div className="grid gap-3">
-                <Label htmlFor="amountGoal">Amount Goal</Label>
-                <Input type="number" placeholder="Amoung Goal (₱)" />
-              </div>
-              <div className="grid gap-3">
-              <Label htmlFor="date">Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
+
+        {active ? (
+          isPastDeadline ? (
+            <div className="relative">
+              <img src="/deadline-exceeded.webp" alt="deadline exceeded" />
+              <form onSubmit={handleUpdateGoal}>
+                <Card className="absolute inset-0 m-auto py-2 w-fit h-fit border-destructive/60 px-4">
+                  <CardContent className="grid gap-2 px-0">
+                    <div className="flex items-center justify-center gap-2 mt-2 text-white/85">
+                      <CalendarIcon className="size-4 mt-[-2px]" />
+                      <p className="">Deadline exceeded!</p>
+                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          id="goalDeadline"
+                          name="goalDeadline"
+                          variant="outline"
+                          className="w-full justify-between"
+                        >
+                          {goalData.goalDeadline
+                            ? formatDate(goalData.goalDeadline)
+                            : "Pick a date"}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={goalData.goalDeadline}
+                          onSelect={(date) =>
+                            setGoalData((prev: any) => ({
+                              ...prev,
+                              goalDeadline: date,
+                            }))
+                          }
+                          disabled={(d) =>
+                            d < new Date(new Date().setHours(0, 0, 0, 0))
+                          }
+                          captionLayout="dropdown"
+                          startMonth={new Date(2010, 0)}
+                          endMonth={new Date(new Date().getFullYear(), 11)}
+                          classNames={{
+                            today: "bg-transparent text-foreground",
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </CardContent>
+                  <CardAction className="w-full flex flex-col items-center justify-center mt-[-1rem] mb-2">
+                    <Button
+                      type="submit"
+                      disabled={processing}
+                      className="mx-auto w-full"
+                    >
+                      {!processing ? (
+                        <>
+                          <CircleFadingPlus /> Extend Deadline
+                        </>
+                      ) : (
+                        <>
+                          <Loader2 className="animate-spin" /> Updating...
+                        </>
+                      )}
+                    </Button>
+                  </CardAction>
+                  <hr className="mt-[-1rem] mb-[-1.2rem]" />
                   <Button
-                    id="date"
-                    name="date"
-                    variant={"outline"}
-                    className="w-full justify-between"
+                    variant={"ghost"}
+                    disabled={processing}
+                    type="button"
+                    onClick={handleArchiveGoal}
+                    className="w-full text-destructive bg-none border-destructive
+                hover:!bg-destructive/10 hover:text-destructive hover:border-2 flex justify-center items-center"
                   >
-                    {goalDeadline}
-                    <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                    {!processing ? (
+                      <>
+                        <Package2 /> Archive Goal
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="animate-spin" /> Archiving...
+                      </>
+                    )}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={goalDeadline}
-                    onSelect={setGoalDeadline}
-                    disabled={(d) =>
-                      d < new Date(new Date().setHours(0, 0, 0, 0))
-                    }
-                    captionLayout="dropdown"
-                    startMonth={new Date(2010, 0)} // ✅ January 2000
-                    endMonth={new Date(new Date().getFullYear(), 11)} // ✅ December current year
-                    classNames={{
-                      today: "bg-transparent text-foreground", // override default today style
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
+                </Card>
+              </form>
             </div>
-            </form>
-          </TabsContent>
-        </Tabs>
+          ) : (
+            <Tabs defaultValue="trans">
+              <TabsList className="w-full mb-2">
+                <TabsTrigger value="trans">Add Amount</TabsTrigger>
+                <TabsTrigger value="edit">Update Goal</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="trans">
+                <form className="grid gap-5" onSubmit={handleAddTransaction}>
+                  <div className="grid gap-3">
+                    <Label htmlFor="amount">Amount to be added</Label>
+                    <Input
+                      type="number"
+                      id="amount"
+                      placeholder="Amount (₱)"
+                      value={formData.amount ?? ""}
+                      onChange={handleChange}
+                      min={1}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={processing}>
+                    {!processing ? (
+                      <>
+                        <BanknoteArrowUp />
+                        Add to Goal
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="animate-spin" /> Adding...
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="edit">
+                <form onSubmit={handleUpdateGoal} className="grid gap-5">
+                  <div className="grid gap-3">
+                    <Label htmlFor="amountGoal">Amount Goal</Label>
+                    <Input
+                      type="number"
+                      placeholder="Amount Goal (₱)"
+                      id="goalAmount"
+                      onChange={handleAmountGoalChange}
+                    />
+                  </div>
+
+                  <div className="grid gap-3">
+                    <Label htmlFor="goalDeadline">Deadline</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          id="goalDeadline"
+                          name="goalDeadline"
+                          variant="outline"
+                          className="w-full justify-between"
+                        >
+                          {goalData.goalDeadline
+                            ? formatDate(goalData.goalDeadline)
+                            : "Pick a date"}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={goalData.goalDeadline}
+                          onSelect={(date) =>
+                            setGoalData((prev: any) => ({
+                              ...prev,
+                              goalDeadline: date,
+                            }))
+                          }
+                          disabled={(d) =>
+                            d < new Date(new Date().setHours(0, 0, 0, 0))
+                          }
+                          captionLayout="dropdown"
+                          startMonth={new Date(2010, 0)}
+                          endMonth={new Date(new Date().getFullYear(), 11)}
+                          classNames={{
+                            today: "bg-transparent text-foreground",
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <Button disabled={processing} type="submit">
+                    {!processing ? (
+                      <>
+                        <Save /> Update Goal
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="animate-spin" /> Updating...
+                      </>
+                    )}
+                  </Button>
+                </form>
+                <hr className="mt-4 mb-2" />
+                <Button
+                  variant={"ghost"}
+                  disabled={processing}
+                  className="w-full text-destructive bg-none border-destructive 
+                hover:!bg-destructive/10 hover:text-destructive hover:border-2 flex justify-center items-center"
+                  onClick={handleArchiveGoal}
+                  type="button"
+                >
+                  {!processing ? (
+                    <>
+                      <Package2 /> Archive Goal
+                    </>
+                  ) : (
+                    <>
+                      <Loader2 className="animate-spin" />
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
+            </Tabs>
+          )
+        ) : (
+          <div className="relative">
+            <img src="/deadline-exceeded.webp" alt="deadline exceeded" />
+            <Card className="absolute inset-0 m-auto w-fit h-fit border-destructive/60 p-4">
+              <CardHeader className="p-0 text-sm mb-[-1rem] text-center">
+                This goal is archived.
+              </CardHeader>
+              <Button
+                type="button"
+                disabled={processing}
+                onClick={handleUnarchiveGoal}
+              >
+                {!processing ? (
+                  <>
+                    <PackageOpen /> Unarchive Goal
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="animate-spin" /> Unarchiving...
+                  </>
+                )}
+              </Button>
+            </Card>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
