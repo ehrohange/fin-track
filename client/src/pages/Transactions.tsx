@@ -13,9 +13,11 @@ import {
   Check,
   Banknote,
   PlusCircle,
+  Eye,
 } from "lucide-react";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -47,7 +49,21 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
-import { transactionDateSelectFailure, transactionDateSelectStart, transactionDateSelectSuccess } from "@/redux/transaction/transactionPageDateSlice";
+import {
+  transactionDateSelectFailure,
+  transactionDateSelectStart,
+  transactionDateSelectSuccess,
+} from "@/redux/transaction/transactionPageDateSlice";
+import type { RootState } from "@/redux/store";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import AddSavingGoal from "@/components/add-saving-goal";
+import SavingGoal from "@/components/saving-goal";
 
 const Transactions = () => {
   const [open, setOpen] = useState(false);
@@ -56,11 +72,33 @@ const Transactions = () => {
   const [tab, setTab] = useState("income"); // current selected tab
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState<number>(0);
-  const [goals, setGoals] = useState<Goal[]>([]);
   const dispatch = useDispatch();
 
-  const currentUser = useSelector((state: any) => state.user.currentUser);
+  const currentGoals = useSelector((state: RootState) => state.goals.goals);
+  const activeGoals = currentGoals.filter((goal) => goal.active === true);
 
+  const currentUser = useSelector((state: any) => state.user.currentUser);
+  const formatCompactPeso = (num: number) => {
+    if (num === null || num === undefined) return "";
+
+    const abs = Math.abs(num);
+    let formatted = "";
+
+    if (abs >= 1_000_000_000_000) {
+      formatted =
+        (num / 1_000_000_000_000).toFixed(1).replace(/\.0$/, "") + "T";
+    } else if (abs >= 1_000_000_000) {
+      formatted = (num / 1_000_000_000).toFixed(1).replace(/\.0$/, "") + "B";
+    } else if (abs >= 1_000_000) {
+      formatted = (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+    } else if (abs >= 1_000) {
+      formatted = (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+    } else {
+      formatted = num.toString();
+    }
+
+    return `₱${formatted}`;
+  };
   const currentDate = useSelector(
     (state: any) => state.transactionDate.currentSelectedDate
   );
@@ -377,6 +415,55 @@ const Transactions = () => {
           </Card>
         </form>
       </section>
+      {activeGoals && (
+        <section className="w-full max-w-6xl">
+          <hr className="mb-3 mt-6" />
+          <Carousel className="max-w-full overflow-hidden pt-2">
+          <h1 className="font-bold font-doto text-2xl sm:text-3xl mb-1">
+            <span className="font-bold font-doto text-2xl sm:text-3xl hidden sm:inline-block">
+              Saving{" "}
+            </span>{" "}
+            Goals
+          </h1>
+          {activeGoals.length > 2 && <AddSavingGoal small={true} />}
+          <Link
+            to={"/"}
+            className="absolute top-2 sm:top-3 right-0 sm:right-[86px] "
+          >
+            <Card className="py-[5px] hover:bg-primary/25 hover:translate-y-[-2px] duration-200">
+              <CardContent className="px-3">
+                <div className="flex items-center gap-1">
+                  <Eye className="size-4" />
+                  <h1 className="text-sm">View all</h1>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <div className="absolute right-[52px] top-7 hidden sm:block">
+            <CarouselPrevious className="cursor-pointer" />
+            <CarouselNext className="cursor-pointer" />
+          </div>
+          <CarouselContent className="pt-2">
+            {activeGoals.map((goal) => (
+              <CarouselItem
+                key={goal._id}
+                className="basis-7/8 sm:basis-2/3 lg:basis-1/3"
+              >
+                <SavingGoal
+                  key={goal._id}
+                  goal={goal}
+                  formatCompactPeso={formatCompactPeso}
+                  setTransactions={setTransactions}
+                />
+              </CarouselItem>
+            ))}
+            <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px] max-w-56">
+              <AddSavingGoal />
+            </CarouselItem>
+          </CarouselContent>
+        </Carousel>
+        </section>
+      )}
       {transactions.length !== 0 ? (
         <TransactionTable
           transactions={transactions}

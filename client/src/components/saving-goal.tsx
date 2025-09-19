@@ -1,4 +1,4 @@
-import type { Goal } from "@/lib/types-index";
+import type { Goal, Transaction } from "@/lib/types-index";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,6 @@ import {
   Package2,
   PackageOpen,
   Save,
-  Trash,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -50,9 +49,10 @@ import DeleteGoal from "./delete-goal";
 type SavingGoalProps = {
   goal: Goal;
   formatCompactPeso: (num: number) => string;
+  setTransactions?: React.Dispatch<React.SetStateAction<Transaction[]>>;
 };
 
-const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
+const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProps) => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const today = new Date();
   const [processing, setProcessing] = useState<boolean>(false);
@@ -189,6 +189,9 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
           amount: goal.amount + formData.amount,
         })
       );
+      if (typeof setTransactions === "function") {
+        setTransactions((prev: any[]) => [res.data.transaction, ...prev]);
+      }
       setFormData({ ...formData, amount: null }); // reset form
       setProcessing(false);
     } catch {
