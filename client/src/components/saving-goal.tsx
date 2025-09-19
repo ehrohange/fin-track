@@ -25,6 +25,7 @@ import {
   Package2,
   PackageOpen,
   Save,
+  Trash,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -32,7 +33,6 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import {
   useState,
-  type ButtonHTMLAttributes,
   type ChangeEvent,
   type FormEvent,
   type MouseEvent,
@@ -43,7 +43,9 @@ import api from "@/lib/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
-import type { AppDispatch } from "@/redux/store";
+import type { AppDispatch, RootState } from "@/redux/store";
+import { updateGoal } from "@/redux/goal/goalsSlice";
+import DeleteGoal from "./delete-goal";
 
 type SavingGoalProps = {
   goal: Goal;
@@ -51,10 +53,12 @@ type SavingGoalProps = {
 };
 
 const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
-  const currentUser = useSelector((state: any) => state.user.currentUser);
+  const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const today = new Date();
   const [processing, setProcessing] = useState<boolean>(false);
   const dispatch = useDispatch<AppDispatch>();
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState("trans");
 
   const formatDate = (d: Date | undefined) => {
     if (!d) return "";
@@ -92,6 +96,9 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
         return;
       }
       const res = await api.patch(`/finance/goal/${goal._id}`, goalData);
+      console.log(res);
+      dispatch(updateGoal(res.data.updatedGoal));
+      setOpen(false);
       toast(<ToastContent icon="success" message={res.data.message} />);
       setProcessing(false);
     } catch (error) {
@@ -100,7 +107,7 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
     }
   };
 
-  const handleArchiveGoal = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleArchiveGoal = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
       setProcessing(true);
@@ -112,10 +119,11 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
         return;
       }
       const res = await api.patch(`/finance/goal/deactivate/${goal._id}`);
-      if (res.status === 200) {
-        toast(<ToastContent icon="success" message="Goal archived!" />);
-        setProcessing(false); // ✅ stop spinner
-      }
+      dispatch(updateGoal(res.data.updatedGoal));
+      setActive(res.data.updatedGoal.active);
+      setOpen(false);
+      toast(<ToastContent icon="success" message="Goal archived!" />);
+      setProcessing(false); // ✅ stop spinner
     } catch (error) {
       setProcessing(false);
       toast(
@@ -127,9 +135,7 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
     }
   };
 
-  const handleUnarchiveGoal = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleUnarchiveGoal = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
       setProcessing(true);
@@ -141,10 +147,11 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
         return;
       }
       const res = await api.patch(`/finance/goal/activate/${goal._id}`);
-      if (res.status === 200) {
-        toast(<ToastContent icon="success" message="Goal unarchived!" />);
-        setProcessing(false); // ✅ stop spinner
-      }
+      dispatch(updateGoal(res.data.updatedGoal));
+      setActive(res.data.updatedGoal.active);
+      setOpen(false);
+      toast(<ToastContent icon="success" message="Goal unarchived!" />);
+      setProcessing(false); // ✅ stop spinner
     } catch (error) {
       setProcessing(false);
       toast(
@@ -168,7 +175,7 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
       }
 
       const res = await api.post(
-        `/finance/transaction/${currentUser._id}/${goal.categoryId._id}`,
+        `/finance/transaction/${currentUser?._id}/${goal.categoryId._id}`,
         {
           ...formData,
           date: formatDate(today),
@@ -176,6 +183,12 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
       );
 
       toast(<ToastContent icon="success" message={res.data.message} />);
+      dispatch(
+        updateGoal({
+          ...goal,
+          amount: goal.amount + formData.amount,
+        })
+      );
       setFormData({ ...formData, amount: null }); // reset form
       setProcessing(false);
     } catch {
@@ -231,7 +244,7 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
     deadlineDate < today && !deadlineToday && goal.amount < goal.goalAmount;
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="w-full">
         <Card
           className={`relative group hover:translate-y-[-4px] duration-200 cursor-pointer ${
@@ -251,8 +264,10 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
             </div>
             <div
               className={`${
-                isPastDeadline ? "bg-destructive/40" : "bg-primary/40"
-              } select-none rounded-sm size-12 flex items-center justify-center group-hover:bg-primary/60 duration-200`}
+                isPastDeadline
+                  ? "bg-destructive/40 group-hover:bg-destructive/60"
+                  : "bg-primary/40 group-hover:bg-primary/60"
+              } select-none rounded-sm size-12 flex items-center justify-center duration-200`}
             >
               <GoalIcon />
             </div>
@@ -429,30 +444,37 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
                       )}
                     </Button>
                   </CardAction>
-                  <hr className="mt-[-1rem] mb-[-1.2rem]" />
-                  <Button
-                    variant={"ghost"}
-                    disabled={processing}
-                    type="button"
-                    onClick={handleArchiveGoal}
-                    className="w-full text-destructive bg-none border-destructive
-                hover:!bg-destructive/10 hover:text-destructive hover:border-2 flex justify-center items-center"
-                  >
-                    {!processing ? (
-                      <>
-                        <Package2 /> Archive Goal
-                      </>
-                    ) : (
-                      <>
-                        <Loader2 className="animate-spin" /> Archiving...
-                      </>
-                    )}
-                  </Button>
+                  <hr className="mt-[-1rem] mb-[-1rem]" />
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <Button
+                      variant={"outline"}
+                      disabled={processing}
+                      type="button"
+                      onClick={handleArchiveGoal}
+                      className="text-white/80 flex justify-center items-center"
+                    >
+                      {!processing ? (
+                        <>
+                          <Package2 /> Archive Goal
+                        </>
+                      ) : (
+                        <>
+                          <Loader2 className="animate-spin" /> Archiving...
+                        </>
+                      )}
+                    </Button>
+
+                    <DeleteGoal
+                      setProcessing={setProcessing}
+                      processing={processing}
+                      goalId={goal._id}
+                    />
+                  </div>
                 </Card>
               </form>
             </div>
           ) : (
-            <Tabs defaultValue="trans">
+            <Tabs defaultValue={tab} value={tab} onValueChange={setTab}>
               <TabsList className="w-full mb-2">
                 <TabsTrigger value="trans">Add Amount</TabsTrigger>
                 <TabsTrigger value="edit">Update Goal</TabsTrigger>
@@ -495,6 +517,9 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
                       type="number"
                       placeholder="Amount Goal (₱)"
                       id="goalAmount"
+                      value={goalData.goalAmount}
+                      step={"0.01"}
+                      min={1}
                       onChange={handleAmountGoalChange}
                     />
                   </div>
@@ -550,25 +575,31 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
                     )}
                   </Button>
                 </form>
-                <hr className="mt-4 mb-2" />
-                <Button
-                  variant={"ghost"}
-                  disabled={processing}
-                  className="w-full text-destructive bg-none border-destructive 
-                hover:!bg-destructive/10 hover:text-destructive hover:border-2 flex justify-center items-center"
-                  onClick={handleArchiveGoal}
-                  type="button"
-                >
-                  {!processing ? (
-                    <>
-                      <Package2 /> Archive Goal
-                    </>
-                  ) : (
-                    <>
-                      <Loader2 className="animate-spin" />
-                    </>
-                  )}
-                </Button>
+                <hr className="mt-4 mb-4" />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={"outline"}
+                    disabled={processing}
+                    type="button"
+                    onClick={handleArchiveGoal}
+                    className="text-white/80 flex justify-center items-center flex-1"
+                  >
+                    {!processing ? (
+                      <>
+                        <Package2 /> Archive Goal
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="animate-spin" /> Archiving...
+                      </>
+                    )}
+                  </Button>
+                  <DeleteGoal
+                    setProcessing={setProcessing}
+                    processing={processing}
+                    goalId={goal._id}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
           )
@@ -579,21 +610,29 @@ const SavingGoal = ({ goal, formatCompactPeso }: SavingGoalProps) => {
               <CardHeader className="p-0 text-sm mb-[-1rem] text-center">
                 This goal is archived.
               </CardHeader>
-              <Button
-                type="button"
-                disabled={processing}
-                onClick={handleUnarchiveGoal}
-              >
-                {!processing ? (
-                  <>
-                    <PackageOpen /> Unarchive Goal
-                  </>
-                ) : (
-                  <>
-                    <Loader2 className="animate-spin" /> Unarchiving...
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  disabled={processing}
+                  onClick={handleUnarchiveGoal}
+                >
+                  {!processing ? (
+                    <>
+                      <PackageOpen /> Unarchive Goal
+                    </>
+                  ) : (
+                    <>
+                      <Loader2 className="animate-spin" /> Unarchiving...
+                    </>
+                  )}
+                </Button>
+
+                <DeleteGoal
+                  setProcessing={setProcessing}
+                  processing={processing}
+                  goalId={goal._id}
+                />
+              </div>
             </Card>
           </div>
         )}

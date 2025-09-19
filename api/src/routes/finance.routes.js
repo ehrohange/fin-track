@@ -12,6 +12,7 @@ import {
   updateGoal,
   deactivateGoal,
   activateGoal,
+  deleteGoal,
 } from "../controllers/finance.controller.js";
 
 const router = Router();
@@ -28,4 +29,5 @@ router.get("/goals/:userId", getGoals);
 router.patch("/goal/:goalId", updateGoal);
 router.patch("/goal/deactivate/:goalId", deactivateGoal);
 router.patch("/goal/activate/:goalId", activateGoal);
+router.delete("/goal/:goalId", deleteGoal);
 export default router;

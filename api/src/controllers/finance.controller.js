@@ -324,9 +324,34 @@ export const updateGoal = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!updatedGoal) return next(errorHandler(404, "Goal was not found."));
+
+    const populatedUpdatedGoal = await Goal.findById(updatedGoal._id)
+      .populate("categoryId", "name type color")
+      .lean();
+
+    if (populatedUpdatedGoal.goalStartDate) {
+      populatedUpdatedGoal.goalStartDate = new Date(
+        populatedUpdatedGoal.goalStartDate
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    if (populatedUpdatedGoal.goalDeadline) {
+      populatedUpdatedGoal.goalDeadline = new Date(
+        populatedUpdatedGoal.goalDeadline
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
     return res
       .status(200)
-      .json({ message: "Goal updated!", updatedGoal: updatedGoal });
+      .json({ message: "Goal updated!", updatedGoal: populatedUpdatedGoal });
   } catch (error) {
     next(error);
   }
@@ -336,7 +361,7 @@ export const deactivateGoal = async (req, res, next) => {
   try {
     const { goalId } = req.params;
 
-    const archivedGoal = await Goal.findByIdAndUpdate(
+    const updatedGoal = await Goal.findByIdAndUpdate(
       goalId,
       {
         $set: {
@@ -346,9 +371,35 @@ export const deactivateGoal = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    if (!archivedGoal) return next(errorHandler(404, "Goal was not found."));
+    if (!updatedGoal) return next(errorHandler(404, "Goal was not found."));
 
-    return res.status(200).json({ message: "Goal archived!", goal: archivedGoal });
+    const populatedUpdatedGoal = await Goal.findById(updatedGoal._id)
+      .populate("categoryId", "name type color")
+      .lean();
+
+    if (populatedUpdatedGoal.goalStartDate) {
+      populatedUpdatedGoal.goalStartDate = new Date(
+        populatedUpdatedGoal.goalStartDate
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    if (populatedUpdatedGoal.goalDeadline) {
+      populatedUpdatedGoal.goalDeadline = new Date(
+        populatedUpdatedGoal.goalDeadline
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Goal archived!", updatedGoal: populatedUpdatedGoal });
   } catch (error) {
     next(error);
   }
@@ -358,7 +409,7 @@ export const activateGoal = async (req, res, next) => {
   try {
     const { goalId } = req.params;
 
-    const unarchivedGoal = await Goal.findByIdAndUpdate(
+    const updatedGoal = await Goal.findByIdAndUpdate(
       goalId,
       {
         $set: {
@@ -368,9 +419,46 @@ export const activateGoal = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    if (!unarchivedGoal) return next(errorHandler(404, "Goal was not found."));
+    if (!updatedGoal) return next(errorHandler(404, "Goal was not found."));
 
-    return res.status(200).json({ message: "Goal unarchived!", goal: unarchivedGoal });
+    const populatedUpdatedGoal = await Goal.findById(updatedGoal._id)
+      .populate("categoryId", "name type color")
+      .lean();
+
+    if (populatedUpdatedGoal.goalStartDate) {
+      populatedUpdatedGoal.goalStartDate = new Date(
+        populatedUpdatedGoal.goalStartDate
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    if (populatedUpdatedGoal.goalDeadline) {
+      populatedUpdatedGoal.goalDeadline = new Date(
+        populatedUpdatedGoal.goalDeadline
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Goal unarchived!", updatedGoal: populatedUpdatedGoal });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteGoal = async (req, res, next) => {
+  try {
+    const { goalId } = req.params;
+    if (!goalId) return next(errorHandler(400, "Goal id is required."));
+    const deletedGoal = await Goal.findByIdAndDelete(goalId);
+    return res.status(200).json({message: "Goal deleted!"});
   } catch (error) {
     next(error);
   }

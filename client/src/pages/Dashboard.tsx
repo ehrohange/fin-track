@@ -59,6 +59,7 @@ const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const currentGoals = useSelector((state: RootState) => state.goals.goals);
+  const activeGoals = currentGoals.filter((goal) => goal.active === true);
 
   useEffect(() => {
     const fetchGoals = async () => {
@@ -246,11 +247,15 @@ const Dashboard = () => {
         {/* SAVINGS */}
         <div className="w-full grid gap-3 mt-6">
           <hr />
-          {savingGoals.length > 0 ? (
+          {activeGoals.length > 0 ? (
             <Carousel className="max-w-full overflow-hidden pt-2">
               <h1 className="font-bold font-doto text-2xl sm:text-3xl mb-1">
-                Saving Goals
+                <span className="font-bold font-doto text-2xl sm:text-3xl hidden sm:inline-block">Saving </span> Goals
               </h1>
+              {
+                activeGoals.length > 2 && 
+              <AddSavingGoal small={true} /> 
+              }
               <Link
                 to={"/"}
                 className="absolute top-2 sm:top-3 right-0 sm:right-[86px] "
@@ -269,7 +274,7 @@ const Dashboard = () => {
                 <CarouselNext className="cursor-pointer" />
               </div>
               <CarouselContent className="pt-2">
-                {savingGoals.map((goal) => (
+                {activeGoals.map((goal) => (
                   <CarouselItem
                     key={goal._id}
                     className="basis-7/8 sm:basis-2/3 lg:basis-1/3"

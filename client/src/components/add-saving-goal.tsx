@@ -13,6 +13,7 @@ import {
   Check,
   ChevronsUpDown,
   GoalIcon,
+  Loader2,
   Plus,
   Save,
 } from "lucide-react";
@@ -38,8 +39,13 @@ import ToastContent from "./toastcontent";
 import { useDispatch, useSelector } from "react-redux";
 import { addGoal } from "@/redux/goal/goalsSlice";
 
-const AddSavingGoal = () => {
+interface AddSavingGoalProps {
+  small?: boolean;
+}
+
+const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
   const dispatch = useDispatch();
+  const [processing, setProcessing] = useState<boolean>(false);
 
   const currentUser = useSelector((state: any) => state.user.currentUser);
 
@@ -73,9 +79,19 @@ const AddSavingGoal = () => {
   const handleSaveGoal = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      setProcessing(true);
       const { goalName, goalAmount, goalDeadline } = formData;
+      if (!value) {
+        toast(
+          <ToastContent icon="error" message="Please select a category." />
+        );
+        setProcessing(false);
+        return;
+      }
+
       if (!goalName.trim()) {
         toast(<ToastContent icon="error" message="Goal Name is required." />);
+        setProcessing(false);
         return;
       }
       if (goalAmount === null || goalAmount <= 0) {
@@ -85,10 +101,12 @@ const AddSavingGoal = () => {
             message="Goal Amount must be greater than 0."
           />
         );
+        setProcessing(false);
         return;
       }
       if (!goalDeadline) {
         toast(<ToastContent icon="error" message="Deadline is required." />);
+        setProcessing(false);
         return;
       }
 
@@ -99,7 +117,7 @@ const AddSavingGoal = () => {
 
       if (res.status !== 201) {
         toast(<ToastContent icon="error" message={res.data.message} />);
-        dispatch(addGoal(res.data.goal));
+        setProcessing(false);
         return;
       }
 
@@ -116,6 +134,7 @@ const AddSavingGoal = () => {
       setValue("");
       setDate(new Date());
       setOpen(false);
+      setProcessing(false);
     } catch (error) {
       console.error(error);
       toast(
@@ -124,6 +143,7 @@ const AddSavingGoal = () => {
           message="There was an error creating goal. Please try again."
         />
       );
+      setProcessing(false);
     }
   };
 
@@ -143,21 +163,30 @@ const AddSavingGoal = () => {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full h-full max-w-56">
-        <Card className="bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200">
-          <CardContent className="flex items-start justify-between gap-4 my-auto">
-            <div className="grid gap-2">
-              <h1 className="font-bold text-xl text-left">
-                Have a goal in mind?
-              </h1>
-              <div className="flex items-center gap-1">
-                <Plus className="size-4 text-white/80 mt-[-1px]" />
-                <p className="text-white/80 text-sm">Click here to add.</p>
+      {!small ? (
+        <DialogTrigger className="w-full h-full max-w-56">
+          <Card className="bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200">
+            <CardContent className="flex items-start justify-between gap-4 my-auto">
+              <div className="grid gap-2">
+                <h1 className="font-bold text-xl text-left">
+                  Have a goal in mind?
+                </h1>
+                <div className="flex items-center gap-1">
+                  <Plus className="size-4 text-white/80 mt-[-1px]" />
+                  <p className="text-white/80 text-sm">Click here to add.</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </DialogTrigger>
+            </CardContent>
+          </Card>
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger className="absolute top-[9px] sm:top-3.5 right-27 sm:right-[195px]
+        hover:translate-y-[-2px] cursor-pointer duration-200">
+          <Card className="rounded-full bg-primary/80 p-1.5 hover:bg-primary/90">
+            <Plus className="size-4" />
+          </Card>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <div className="flex items-start gap-4">
@@ -244,6 +273,7 @@ const AddSavingGoal = () => {
               <Input
                 type="number"
                 min={1}
+                step="0.01"
                 id="goalAmount"
                 value={formData.goalAmount ?? ""}
                 onChange={handleChange}
@@ -295,8 +325,16 @@ const AddSavingGoal = () => {
               <DialogClose asChild>
                 <Button variant={"outline"}>Cancel</Button>
               </DialogClose>
-              <Button type="submit">
-                <Save /> Save Goal
+              <Button type="submit" disabled={processing}>
+                {!processing ? (
+                  <>
+                    <Save /> Save Goal
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="animate-spin" /> Saving...
+                  </>
+                )}
               </Button>
             </div>
           </DialogFooter>
