@@ -49,10 +49,11 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
 
   const currentUser = useSelector((state: any) => state.user.currentUser);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [value, setValue] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [openSG, setOpenSG] = useState<boolean>(false);
 
   const formatDate = (d: Date | undefined) => {
     if (!d) return "";
@@ -135,6 +136,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
       setDate(new Date());
       setOpen(false);
       setProcessing(false);
+      setOpenSG(false);
     } catch (error) {
       console.error(error);
       toast(
@@ -162,7 +164,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
   const filteredCategories = categories.filter((c) => c.type === "savings");
 
   return (
-    <Dialog>
+    <Dialog open={openSG} onOpenChange={setOpenSG}>
       {!small ? (
         <DialogTrigger className="w-full h-full min-h-36">
           <Card className="group bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200 overflow-hidden relative">
