@@ -3,7 +3,6 @@ import {
   CardTitle,
   Card,
   CardContent,
-  CardDescription,
 } from "@/components/ui/card";
 import api from "@/lib/axios";
 import type { Transaction } from "@/lib/types-index";
@@ -15,7 +14,6 @@ import {
   BanknoteX,
   ChartColumn,
   Eye,
-  GoalIcon,
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -38,12 +36,12 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SavingGoal from "@/components/saving-goal";
+import { setTransactions, setTransactionsLoading } from "@/redux/transaction/transactionsSlice";
 
 const Dashboard = () => {
   const [total, setTotal] = useState<number>(0);
   const [totalIncome, setTotalIncome] = useState<number>(0);
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const date = new Date();
 
@@ -59,7 +57,7 @@ const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const currentGoals = useSelector((state: RootState) => state.goals.goals);
-  const activeGoals = currentGoals.filter((goal) => goal.active === true);
+  const activeGoals = currentGoals.filter((goal) => goal.active === true).reverse();
 
   useEffect(() => {
     const fetchGoals = async () => {
@@ -79,21 +77,20 @@ const Dashboard = () => {
     fetchGoals();
   }, [currentUser?._id, dispatch]);
 
-  // Always read from Redux
-  const savingGoals = [...currentGoals].reverse();
+  const transactions = useSelector((state: RootState) => state.transactions.transactions);
 
   useEffect(() => {
     const fetchTransactions = async () => {
       if (!currentUser?._id) return;
       try {
+        dispatch(setTransactionsLoading(true));
         const res = await api.get(`/finance/transactions/${currentUser._id}`);
 
         const sorted = res.data.transactions.sort(
           (a: Transaction, b: Transaction) =>
             new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-
-        setTransactions(sorted);
+        dispatch(setTransactions(sorted));
       } catch (error) {
         toast(
           <ToastContent icon="error" message="Failed to fetch transactions." />
@@ -210,7 +207,7 @@ const Dashboard = () => {
                   <h1 className="font-semibold">{toPeso(totalIncome)}</h1>
                   <span className="flex items-center gap-1 font-light text-sm">
                     <TrendingUp className="size-5 text-primary/80" />
-                    <p className="text-white/80">Up by 20%</p>
+                    <p className="text-white/80">As of {formatDate(date)}</p>
                   </span>
                 </div>
                 <ChartColumn className="size-12 text-white/95" />
@@ -257,7 +254,7 @@ const Dashboard = () => {
               <AddSavingGoal small={true} /> 
               }
               <Link
-                to={"/"}
+                to={"/goals"}
                 className="absolute top-2 sm:top-3 right-0 sm:right-[86px] "
               >
                 <Card className="py-[5px] hover:bg-primary/25 hover:translate-y-[-2px] duration-200">
@@ -282,7 +279,7 @@ const Dashboard = () => {
                     <SavingGoal key={goal._id} goal={goal} formatCompactPeso={formatCompactPeso} />
                   </CarouselItem>
                 ))}
-                <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px] max-w-56">
+                <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px]">
                   <AddSavingGoal />
                 </CarouselItem>
               </CarouselContent>
@@ -299,7 +296,6 @@ const Dashboard = () => {
       </section>
       <TransactionTable
         transactions={transactions}
-        setTransactions={setTransactions}
       />
     </div>
   );

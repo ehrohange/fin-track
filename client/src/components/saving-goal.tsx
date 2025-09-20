@@ -52,7 +52,11 @@ type SavingGoalProps = {
   setTransactions?: React.Dispatch<React.SetStateAction<Transaction[]>>;
 };
 
-const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProps) => {
+const SavingGoal = ({
+  goal,
+  formatCompactPeso,
+  setTransactions,
+}: SavingGoalProps) => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const today = new Date();
   const [processing, setProcessing] = useState<boolean>(false);
@@ -73,8 +77,6 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
     amount: null,
     date: formatDate(today),
   });
-
-  const [active, setActive] = useState<boolean>(goal.active);
 
   const [goalData, setGoalData] = useState<any>({
     goalAmount: goal.goalAmount,
@@ -111,7 +113,7 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
     e.preventDefault();
     try {
       setProcessing(true);
-      if (!active) {
+      if (!goal.active) {
         toast(
           <ToastContent icon="error" message="This goal is already archived." />
         );
@@ -120,7 +122,6 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
       }
       const res = await api.patch(`/finance/goal/deactivate/${goal._id}`);
       dispatch(updateGoal(res.data.updatedGoal));
-      setActive(res.data.updatedGoal.active);
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal archived!" />);
       setProcessing(false); // ✅ stop spinner
@@ -139,7 +140,7 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
     e.preventDefault();
     try {
       setProcessing(true);
-      if (active) {
+      if (goal.active) {
         toast(
           <ToastContent icon="error" message="This goal is already active." />
         );
@@ -148,7 +149,6 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
       }
       const res = await api.patch(`/finance/goal/activate/${goal._id}`);
       dispatch(updateGoal(res.data.updatedGoal));
-      setActive(res.data.updatedGoal.active);
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal unarchived!" />);
       setProcessing(false); // ✅ stop spinner
@@ -248,9 +248,17 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="w-full">
+      <DialogTrigger className="w-full relative group hover:translate-y-[-4px] duration-200 cursor-pointer">
+        {!goal.active && (
+          <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10 rounded-xl flex items-center justify-center">
+            <div className="flex items-center gap-2 justify-center text-white/80">
+              <Package2 className="size-5 mb-0.5" />
+              <span className="text-sm">This goal is archived.</span>
+            </div>
+          </div>
+        )}
         <Card
-          className={`relative group hover:translate-y-[-4px] duration-200 cursor-pointer ${
+          className={`relative ${
             isPastDeadline ? "border-destructive/60" : "border-primary/60"
           }`}
         >
@@ -382,7 +390,7 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
         </DialogHeader>
         <hr />
 
-        {active ? (
+        {goal.active ? (
           isPastDeadline ? (
             <div className="relative">
               <img src="/deadline-exceeded.webp" alt="deadline exceeded" />
@@ -557,8 +565,8 @@ const SavingGoal = ({ goal, formatCompactPeso, setTransactions }: SavingGoalProp
                             d < new Date(new Date().setHours(0, 0, 0, 0))
                           }
                           captionLayout="dropdown"
-                          startMonth={new Date(2010, 0)}
-                          endMonth={new Date(new Date().getFullYear(), 11)}
+                          startMonth={new Date()}
+                          endMonth={new Date(new Date().getFullYear() + 70, 11)}
                           classNames={{
                             today: "bg-transparent text-foreground",
                           }}

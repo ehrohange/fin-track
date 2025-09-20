@@ -164,14 +164,18 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
   return (
     <Dialog>
       {!small ? (
-        <DialogTrigger className="w-full h-full max-w-56">
-          <Card className="bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200">
+        <DialogTrigger className="w-full h-full min-h-36">
+          <Card className="group bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200 overflow-hidden relative">
+            <GoalIcon
+              className="absolute top-2 size-60 right-[-3.5rem] rotate-[-35deg] text-white/30
+            group-hover:translate-y-[-6px] group-hover:text-white/65 group-hover:rotate-[325deg] duration-200"
+            />
             <CardContent className="flex items-start justify-between gap-4 my-auto">
               <div className="grid gap-2">
-                <h1 className="font-bold text-xl text-left">
+                <h1 className="font-bold text-xl text-left group-hover:text-shadow-lg">
                   Have a goal in mind?
                 </h1>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 group-hover:text-shadow-lg">
                   <Plus className="size-4 text-white/80 mt-[-1px]" />
                   <p className="text-white/80 text-sm">Click here to add.</p>
                 </div>
@@ -180,8 +184,10 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
           </Card>
         </DialogTrigger>
       ) : (
-        <DialogTrigger className="absolute top-[9px] sm:top-3.5 right-27 sm:right-[195px]
-        hover:translate-y-[-2px] cursor-pointer duration-200">
+        <DialogTrigger
+          className="absolute top-[9px] sm:top-3.5 right-27 sm:right-[195px]
+        hover:translate-y-[-2px] cursor-pointer duration-200"
+        >
           <Card className="rounded-full bg-primary/80 p-1.5 hover:bg-primary/90">
             <Plus className="size-4" />
           </Card>
@@ -310,8 +316,8 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
                       d < new Date(new Date().setHours(0, 0, 0, 0))
                     }
                     captionLayout="dropdown"
-                    startMonth={new Date(2010, 0)}
-                    endMonth={new Date(new Date().getFullYear(), 11)}
+                    startMonth={new Date()}
+                    endMonth={new Date(new Date().getFullYear() + 70, 11)}
                     classNames={{
                       today: "bg-transparent text-foreground",
                     }}

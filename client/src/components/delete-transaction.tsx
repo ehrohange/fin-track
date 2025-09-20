@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +13,9 @@ import {
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import ToastContent from "./toastcontent";
+import { useDispatch } from "react-redux";
+import { updateGoal } from "@/redux/goal/goalsSlice";
+import { useState } from "react";
 
 interface DeleteTransProps {
   userId: string;
@@ -21,15 +24,24 @@ interface DeleteTransProps {
 }
 
 const DeleteTransaction = ({ userId, _id, onDeleted }: DeleteTransProps) => {
+  const [processing, setProcessing] = useState<boolean>(false);
+  const dispatch = useDispatch();
+
   const handleDeleteTransaction = async () => {
     try {
+      setProcessing(true);
       const success = await api.delete(`/finance/transaction/${userId}/${_id}`);
       if (success.status === 404) {
         toast(<ToastContent icon="error" message="User not found." />);
+        setProcessing(false);
         return;
       }
-      toast(<ToastContent icon="success" message={success.data.message} />);
+      if (success.data.updatedGoal) {
+        dispatch(updateGoal(success.data.updatedGoal));
+      }
       onDeleted?.(_id); // 👈 tell parent to remove from state
+      toast(<ToastContent icon="success" message={success.data.message} />);
+      setProcessing(false);
     } catch (error) {
       toast(
         <ToastContent
@@ -37,6 +49,7 @@ const DeleteTransaction = ({ userId, _id, onDeleted }: DeleteTransProps) => {
           message="There was an error deleting this transaction. Please try again."
         />
       );
+      setProcessing(false);
     }
   };
 
@@ -64,8 +77,15 @@ const DeleteTransaction = ({ userId, _id, onDeleted }: DeleteTransProps) => {
           <AlertDialogAction
             onClick={handleDeleteTransaction}
             className="bg-destructive/80 hover:bg-destructive cursor-pointer"
+            disabled={processing}
           >
-            Continue
+            {!processing ? (
+              <>Continue</>
+            ) : (
+              <>
+                <Loader2 className="animate-spin" /> Deleting...
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

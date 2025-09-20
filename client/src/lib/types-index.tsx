@@ -42,6 +42,8 @@ export interface Transaction {
   _id: string;
   userId: string;
   categoryId: {
+    _id: string;
+    color: string;
     type: string;
     name: string;
   };

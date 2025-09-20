@@ -6,12 +6,14 @@ import storage from "redux-persist/lib/storage";
 import userReducer from "./user/userSlice";
 import transactionDateReducer from "./transaction/transactionPageDateSlice";
 import goalsReducer from "./goal/goalsSlice";
+import transactionsReducer from "./transaction/transactionsSlice";
 import { resetState } from "./resetActions";
 
 const appReducer = combineReducers({
   user: userReducer,
   transactionDate: transactionDateReducer,
   goals: goalsReducer,
+  transactions: transactionsReducer
 });
 
 const rootReducer = (state: any, action: any) => {

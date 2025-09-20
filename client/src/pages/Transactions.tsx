@@ -64,18 +64,21 @@ import {
 } from "@/components/ui/carousel";
 import AddSavingGoal from "@/components/add-saving-goal";
 import SavingGoal from "@/components/saving-goal";
+import { addTransaction } from "@/redux/transaction/transactionsSlice";
 
 const Transactions = () => {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [value, setValue] = useState(""); // selected category
   const [tab, setTab] = useState("income"); // current selected tab
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState<number>(0);
   const dispatch = useDispatch();
 
   const currentGoals = useSelector((state: RootState) => state.goals.goals);
   const activeGoals = currentGoals.filter((goal) => goal.active === true);
+  const transactions = useSelector(
+    (state: RootState) => state.transactions.transactions
+  );
 
   const currentUser = useSelector((state: any) => state.user.currentUser);
   const formatCompactPeso = (num: number) => {
@@ -120,6 +123,11 @@ const Transactions = () => {
     return `${month} ${day} ${year}`; // e.g. "Aug 25 2025"
   };
 
+  const filteredTransactions = transactions.filter((t) => {
+    if (!date) return false;
+    return formatDate(new Date(t.date)) === formatDate(date);
+  });
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData({
@@ -146,10 +154,9 @@ const Transactions = () => {
         }
       );
 
-      toast(<ToastContent icon="success" message={res.data.message} />);
+      dispatch(addTransaction(res.data.transaction));
 
-      // ✅ refresh list
-      setTransactions((prev) => [res.data.transaction, ...prev]);
+      toast(<ToastContent icon="success" message={res.data.message} />);
 
       // ✅ reset form
       setFormData({ description: "", amount: null });
@@ -189,41 +196,18 @@ const Transactions = () => {
   }, []);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const formattedDate = formatDate(date);
-
-        const res = await api.get(
-          `/finance/transactionsByDate/${currentUser._id}`,
-          {
-            params: { date: formattedDate }, // ⬅️ query param
-          }
-        );
-
-        setTransactions(res.data.transactions.reverse());
-      } catch (error) {
-        toast(
-          <ToastContent icon="error" message="Failed to fetch transactions." />
-        );
-      }
-    };
-
-    fetchTransactions();
-  }, [date]);
-
-  useEffect(() => {
     let income = 0;
     let expense = 0;
     let savings = 0;
 
-    transactions.forEach((t) => {
+    filteredTransactions.forEach((t) => {
       if (t.categoryId.type === "income") income += t.amount;
       if (t.categoryId.type === "expense") expense += t.amount;
       if (t.categoryId.type === "savings") savings += t.amount;
     });
 
     setTotal(income - (expense + savings));
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // ✅ filter categories based on tab
   const filteredCategories = categories.filter((c) => c.type === tab);
@@ -415,59 +399,64 @@ const Transactions = () => {
           </Card>
         </form>
       </section>
-      {activeGoals && (
-        <section className="w-full max-w-6xl">
-          <hr className="mb-3 mt-6" />
+      <section className="w-full max-w-6xl">
+        <hr className="mb-3 mt-6" />
+        {activeGoals.length > 0 ? (
           <Carousel className="max-w-full overflow-hidden pt-2">
-          <h1 className="font-bold font-doto text-2xl sm:text-3xl mb-1">
-            <span className="font-bold font-doto text-2xl sm:text-3xl hidden sm:inline-block">
-              Saving{" "}
-            </span>{" "}
-            Goals
-          </h1>
-          {activeGoals.length > 2 && <AddSavingGoal small={true} />}
-          <Link
-            to={"/"}
-            className="absolute top-2 sm:top-3 right-0 sm:right-[86px] "
-          >
-            <Card className="py-[5px] hover:bg-primary/25 hover:translate-y-[-2px] duration-200">
-              <CardContent className="px-3">
-                <div className="flex items-center gap-1">
-                  <Eye className="size-4" />
-                  <h1 className="text-sm">View all</h1>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <div className="absolute right-[52px] top-7 hidden sm:block">
-            <CarouselPrevious className="cursor-pointer" />
-            <CarouselNext className="cursor-pointer" />
-          </div>
-          <CarouselContent className="pt-2">
-            {activeGoals.map((goal) => (
-              <CarouselItem
-                key={goal._id}
-                className="basis-7/8 sm:basis-2/3 lg:basis-1/3"
-              >
-                <SavingGoal
+            <h1 className="font-bold font-doto text-2xl sm:text-3xl mb-1">
+              <span className="font-bold font-doto text-2xl sm:text-3xl hidden sm:inline-block">
+                Saving{" "}
+              </span>{" "}
+              Goals
+            </h1>
+            {activeGoals.length > 2 && <AddSavingGoal small={true} />}
+            <Link
+              to={"/goals"}
+              className="absolute top-2 sm:top-3 right-0 sm:right-[86px] "
+            >
+              <Card className="py-[5px] hover:bg-primary/25 hover:translate-y-[-2px] duration-200">
+                <CardContent className="px-3">
+                  <div className="flex items-center gap-1">
+                    <Eye className="size-4" />
+                    <h1 className="text-sm">View all</h1>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            <div className="absolute right-[52px] top-7 hidden sm:block">
+              <CarouselPrevious className="cursor-pointer" />
+              <CarouselNext className="cursor-pointer" />
+            </div>
+            <CarouselContent className="pt-2">
+              {activeGoals.map((goal) => (
+                <CarouselItem
                   key={goal._id}
-                  goal={goal}
-                  formatCompactPeso={formatCompactPeso}
-                  setTransactions={setTransactions}
-                />
+                  className="basis-7/8 sm:basis-2/3 lg:basis-1/3"
+                >
+                  <SavingGoal
+                    key={goal._id}
+                    goal={goal}
+                    formatCompactPeso={formatCompactPeso}
+                  />
+                </CarouselItem>
+              ))}
+              <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px]">
+                <AddSavingGoal />
               </CarouselItem>
-            ))}
-            <CarouselItem className="basis-7/8 sm:basis-2/3 lg:basis-1/3 pr-[1px] max-w-56">
+            </CarouselContent>
+          </Carousel>
+        ) : (
+          <>
+            <h1 className="font-bold font-doto text-3xl mb-3">Saving Goals</h1>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
               <AddSavingGoal />
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
-        </section>
-      )}
-      {transactions.length !== 0 ? (
+            </div>
+          </>
+        )}
+      </section>
+      {filteredTransactions.length !== 0 ? (
         <TransactionTable
-          transactions={transactions}
-          setTransactions={setTransactions}
+          transactions={filteredTransactions}
           total={total}
           date={formatDate(date)}
         />

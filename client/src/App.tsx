@@ -16,6 +16,7 @@ import { logout } from "./redux/user/userSlice";
 import { resetState } from "./redux/resetActions";
 import HomeAndLoginRoutes from "./routes/HomeAndLoginRoutes";
 import Transactions from "./pages/Transactions";
+import Goals from "./pages/Goals";
 
 interface JwtPayload {
   exp?: number;
@@ -57,6 +58,7 @@ function App() {
           <Route element={<PrivateRoutes />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
+            <Route path="/goals" element={<Goals />} />
           </Route>
           <Route element={<HomeAndLoginRoutes />}>
             <Route path="/" element={<Home />} />

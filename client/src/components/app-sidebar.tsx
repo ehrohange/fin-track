@@ -9,7 +9,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ChartSpline, ChevronRight, LogIn, PlusCircle } from "lucide-react";
+import { ChartSpline, ChevronRight, GoalIcon, LogIn, PlusCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -130,6 +130,18 @@ const AppSideBar = () => {
                     >
                       <ChartSpline />
                       <span>Dashboard</span>
+                      <ChevronRight />
+                    </Button>
+                  </Link>
+                )}
+                {pathLastPart !== "goals" && (
+                  <Link to={"/goals"} onClick={() => setOpenMobile(false)}>
+                    <Button
+                      className="w-full flex items-center justify-between"
+                      variant={"ghost"}
+                    >
+                      <GoalIcon />
+                      <span>Your Goals</span>
                       <ChevronRight />
                     </Button>
                   </Link>

@@ -11,22 +11,21 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import type { Transaction } from "@/lib/types-index";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import DeleteTransaction from "./delete-transaction";
 import { Card, CardContent } from "./ui/card";
 import { Banknote } from "lucide-react";
+import { deleteTransaction } from "@/redux/transaction/transactionsSlice";
 
 interface TransactionTableProps {
   transactions: Transaction[];
-  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
   total?: number;
   date?: string;
 }
 
 const TransactionTable = ({
   transactions,
-  setTransactions,
   total,
   date,
 }: TransactionTableProps) => {
@@ -36,6 +35,7 @@ const TransactionTable = ({
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(transactions.length / rowsPerPage);
+  const dispatch = useDispatch();
 
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
 
@@ -60,7 +60,7 @@ const TransactionTable = ({
   };
 
   const handleRemoveTransaction = (id: string) => {
-    setTransactions((prev) => prev.filter((t) => t._id !== id));
+    dispatch(deleteTransaction(id));
   };
   return (
     <section className="w-full max-w-6xl mt-6">

@@ -40,7 +40,7 @@ const Navbar = () => {
         <NavigationMenuList className="md:flex items-center space-x-4 hidden">
           {currentUser ? (
             <>
-              {pathLastPart !== "transaction" && (
+              {pathLastPart !== "transactions" && (
                 <NavigationMenuItem>
                   <Link to={"/transactions"}>
                     <Button>
@@ -54,6 +54,13 @@ const Navbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link to="/dashboard">Dashboard</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
+              {pathLastPart !== "goals" && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/goals">Your Goals</Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               )}
@@ -93,15 +100,15 @@ const Navbar = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
             </>
-          ) : (
-            <NavigationMenuItem>
+          ) : ( pathLastPart !== "login" &&
+            (<NavigationMenuItem>
               <Link to="/login">
                 <Button className="text-white" variant={"default"}>
                   <LogIn />
                   <span>Login</span>
                 </Button>
               </Link>
-            </NavigationMenuItem>
+            </NavigationMenuItem>)
           )}
         </NavigationMenuList>
       </NavigationMenuList>

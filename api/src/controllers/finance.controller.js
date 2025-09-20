@@ -169,11 +169,67 @@ export const getTransactionsByUserIdAndDate = async (req, res, next) => {
 export const deleteTransaction = async (req, res, next) => {
   try {
     const { userId, transactionId } = req.params;
+
     const user = await User.findById(userId);
     if (!user) return next(errorHandler(404, "User not found."));
-    const transaction = await Transaction.findByIdAndDelete(transactionId);
+
+    // Find transaction first
+    const transaction = await Transaction.findById(transactionId);
     if (!transaction) return next(errorHandler(404, "Transaction not found."));
-    return res.status(200).json({ message: "Transaction deleted!" });
+
+    // Find matching goal
+    const goal = await Goal.findOne({
+      goalName: transaction.description,
+      categoryId: transaction.categoryId,
+      userId: transaction.userId,
+      active: true,
+      goalStartDate: { $lte: transaction.date }, // transaction >= goalStartDate
+      goalDeadline: { $gte: transaction.date }, // transaction <= goalDeadline
+    });
+
+    if (goal) {
+      // Deduct the amount, but don’t allow it to go below 0
+      const newAmount = Math.max(0, goal.amount - transaction.amount);
+      goal.amount = newAmount;
+      const updatedGoal = await goal.save();
+
+      const populatedUpdatedGoal = await Goal.findById(updatedGoal._id)
+        .populate("categoryId", "name type color")
+        .lean();
+
+      if (populatedUpdatedGoal.goalStartDate) {
+        populatedUpdatedGoal.goalStartDate = new Date(
+          populatedUpdatedGoal.goalStartDate
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      if (populatedUpdatedGoal.goalDeadline) {
+        populatedUpdatedGoal.goalDeadline = new Date(
+          populatedUpdatedGoal.goalDeadline
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      await Transaction.findByIdAndDelete(transactionId);
+
+      return res
+      .status(200)
+      .json({ message: "Transaction deleted and goal updated!", updatedGoal: populatedUpdatedGoal });
+    }
+
+    // Now delete the transaction
+    await Transaction.findByIdAndDelete(transactionId);
+
+    return res
+      .status(200)
+      .json({ message: "Transaction deleted!"});
   } catch (error) {
     next(error);
   }
@@ -458,7 +514,7 @@ export const deleteGoal = async (req, res, next) => {
     const { goalId } = req.params;
     if (!goalId) return next(errorHandler(400, "Goal id is required."));
     const deletedGoal = await Goal.findByIdAndDelete(goalId);
-    return res.status(200).json({message: "Goal deleted!"});
+    return res.status(200).json({ message: "Goal deleted!" });
   } catch (error) {
     next(error);
   }
