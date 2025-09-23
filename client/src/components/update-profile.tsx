@@ -1,4 +1,11 @@
-import { ChevronRight, Pencil, PencilLine, Save, Trash } from "lucide-react";
+import {
+  ChevronRight,
+  Loader2,
+  Pencil,
+  PencilLine,
+  Save,
+  Trash,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -50,6 +57,8 @@ import { useNavigate } from "react-router-dom";
 
 const UpdateProfile = () => {
   // const fileRef = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState<boolean>(false);
+  const [processing, setProcessing] = useState<boolean>(false);
   const dispatch = useDispatch();
   const signIn = useSignIn();
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
@@ -70,7 +79,7 @@ const UpdateProfile = () => {
     if (!userId) return;
 
     dispatch(updateUserStart());
-
+    setProcessing(true);
     try {
       const res = await api.patch(`/users/name/${userId}`, {
         fullName: formData.fullName,
@@ -91,20 +100,24 @@ const UpdateProfile = () => {
 
           // ✅ Update Redux user
           dispatch(updateUserSuccess(decodedUser));
-
+          setOpen(false);
           toast(<ToastContent icon="success" message="Full name updated!" />);
+          setProcessing(false);
         }
       } else {
+        setProcessing(false);
+
         throw new Error("Unexpected response");
       }
     } catch (error: any) {
       dispatch(updateUserFailure(error.message || "Update failed"));
+      setProcessing(false);
       toast(<ToastContent icon="error" message="Update failed!" />);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant={"ghost"}
@@ -131,7 +144,7 @@ const UpdateProfile = () => {
               </div>
             </div>
           </DialogHeader>
-          <hr className="my-2"/>
+          <hr className="my-2" />
           <div className="w-full flex justify-center flex-col items-center">
             <Label htmlFor="avatar" className="mb-2">
               Profile Picture
@@ -174,8 +187,16 @@ const UpdateProfile = () => {
               <DialogClose asChild>
                 <Button variant={"outline"}>Cancel</Button>
               </DialogClose>
-              <Button type="submit">
-                <Save /> Save Changes
+              <Button type="submit" disabled={processing}>
+                {!processing ? (
+                  <>
+                    <Save /> Save Changes
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="animate-spin" /> Saving...
+                  </>
+                )}
               </Button>
             </div>
             <hr className="h-1 w-full mt-4" />
@@ -192,15 +213,18 @@ const DeleteAlertDialog = () => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const signOut = useSignOut();
   const navigate = useNavigate();
+  const [processing, setProcessing] = useState<boolean>(false);
   const handleDeleteUser = async () => {
     const userId = currentUser?._id;
     if (!userId) return;
     dispatch(deleteUserStart());
+    setProcessing(true);
     try {
       const res = await api.delete(`/users/${userId}`);
       if (res.status === 200) {
         dispatch(deleteUserSuccess());
         signOut();
+        setProcessing(false);
         toast(
           <ToastContent
             icon="success"
@@ -219,6 +243,7 @@ const DeleteAlertDialog = () => {
           message="Account deletion failed. Please try again."
         />
       );
+      setProcessing(false);
     }
   };
   return (
@@ -244,9 +269,18 @@ const DeleteAlertDialog = () => {
           <AlertDialogAction
             className="bg-destructive/80 hover:bg-destructive"
             onClick={handleDeleteUser}
+            disabled={processing}
           >
-            <Trash />
-            Yes, delete my account
+            {!processing ? (
+              <>
+                <Trash />
+                Yes, delete my account
+              </>
+            ) : (
+              <>
+                <Loader2 className="animate-spin" /> Deleting...
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

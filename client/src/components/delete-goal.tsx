@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { deleteGoal } from "@/redux/goal/goalsSlice";
 import ToastContent from "./toastcontent";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 
 interface DeleteGoalProps {
   goalId: string;
@@ -29,6 +30,8 @@ const DeleteGoal = ({ goalId, processing, setProcessing }: DeleteGoalProps) => {
     }
   };
   return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
     <Button
       variant={"outline"}
       className="text-destructive !bg-destructive/10 !border-destructive/60 
@@ -38,6 +41,37 @@ const DeleteGoal = ({ goalId, processing, setProcessing }: DeleteGoalProps) => {
     >
       {!processing ? <Trash /> : <Loader2 className="animate-spin" />}
     </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            Are you sure you want to delete this transaction?
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete this and
+            remove it from our server.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="cursor-pointer">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDeleteGoal}
+            className="bg-destructive/80 hover:bg-destructive cursor-pointer"
+            disabled={processing}
+          >
+            {!processing ? (
+              <>Continue</>
+            ) : (
+              <>
+                <Loader2 className="animate-spin" /> Deleting...
+              </>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
