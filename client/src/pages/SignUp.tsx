@@ -86,13 +86,10 @@ const SignUp = () => {
 
         // ✅ Auto-login immediately after signup
         dispatch(loginStart());
-        const loginRes = await api.post(
-          "/auth/login",
-          {
-            email: formData.email,
-            password: formData.password,
-          }
-        );
+        const loginRes = await api.post("/auth/login", {
+          email: formData.email,
+          password: formData.password,
+        });
 
         if (loginRes.status === 200) {
           const data = loginRes.data;
@@ -139,11 +136,22 @@ const SignUp = () => {
 
       setSubmitting(false);
     } catch (error: any) {
-      const msg =
-        error.response?.data?.message ||
-        "Something went wrong. Please try again.";
-      dispatch(loginFailure(msg));
-      toast(<ToastContent icon="error" message={msg} />);
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="There was an error. Please try again."
+          />
+        );
+      }
+      dispatch(loginFailure(error));
       setSubmitting(false);
     }
   };

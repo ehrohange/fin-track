@@ -6,7 +6,17 @@ import { useDispatch } from "react-redux";
 import { deleteGoal } from "@/redux/goal/goalsSlice";
 import ToastContent from "./toastcontent";
 import { toast } from "sonner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 interface DeleteGoalProps {
@@ -22,19 +32,32 @@ const DeleteGoal = ({ goalId, processing, setProcessing }: DeleteGoalProps) => {
     e.preventDefault();
     setProcessing(true);
     try {
-        if(!token) {
-          toast(<ToastContent icon="error" message="Unauthorized access." />);
-        }
-      const res = await api.delete(`/finance/goal/${goalId}`,
-        {
-          headers: {
-            Authorization: token,
-          },
-        });
+      if (!token) {
+        toast(<ToastContent icon="error" message="Unauthorized access." />);
+      }
+      const res = await api.delete(`/finance/goal/${goalId}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
       dispatch(deleteGoal(goalId));
       toast(<ToastContent icon="success" message={res.data.message} />);
-    } catch (error) {
-      toast(<ToastContent icon="error" message="Error deleting goal." />);
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Error deleting goal. Please try again."
+          />
+        );
+      }
     } finally {
       setProcessing(false);
     }
@@ -42,13 +65,13 @@ const DeleteGoal = ({ goalId, processing, setProcessing }: DeleteGoalProps) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-    <Button
-      variant={"outline"}
-      className="text-destructive !bg-destructive/10 !border-destructive/60 
+        <Button
+          variant={"outline"}
+          className="text-destructive !bg-destructive/10 !border-destructive/60 
                 hover:!bg-destructive/60 hover:text-white/80"
-    >
-      {!processing ? <Trash /> : <Loader2 className="animate-spin" />}
-    </Button>
+        >
+          {!processing ? <Trash /> : <Loader2 className="animate-spin" />}
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

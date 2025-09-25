@@ -1,4 +1,10 @@
-import { ChevronRight, Lock, LockKeyholeIcon, Save } from "lucide-react";
+import {
+  ChevronRight,
+  Loader2,
+  Lock,
+  LockKeyholeIcon,
+  Save,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -23,6 +29,7 @@ import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 const UpdatePassword = () => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const token = useAuthHeader();
+  const [processing, setProcessing] = useState<boolean>(false);
 
   const userId = currentUser?._id;
   const [formData, setFormData] = useState({
@@ -37,13 +44,16 @@ const UpdatePassword = () => {
   const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      setProcessing(true);
       const { newPassword, confirmNewPassword } = formData;
       if (!newPassword.trim() || !confirmNewPassword.trim()) {
         toast(<ToastContent icon="error" message="All fields are required!" />);
+        setProcessing(false);
         return;
       }
       if (newPassword !== confirmNewPassword) {
         toast(<ToastContent icon="error" message="Passwords do not match!" />);
+        setProcessing(false);
         return;
       }
       const res = await api.patch(
@@ -60,15 +70,26 @@ const UpdatePassword = () => {
       if (res.status === 200) {
         toast(<ToastContent icon="success" message={res.data.message} />);
         setFormData({ newPassword: "", confirmNewPassword: "" });
+        setProcessing(false);
         return;
       }
-    } catch (error) {
-      toast(
-        <ToastContent
-          icon="error"
-          message="Failed to update password. Please try again."
-        />
-      );
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="There was an error updating your password. Please try again."
+          />
+        );
+      }
+      setProcessing(false);
     }
   };
 
@@ -137,8 +158,16 @@ const UpdatePassword = () => {
               <DialogClose asChild>
                 <Button variant={"outline"}>Cancel</Button>
               </DialogClose>
-              <Button type="submit">
-                <Save /> Save Changes
+              <Button type="submit" disabled={processing}>
+                {!processing ? (
+                  <>
+                    <Save /> Save Changes
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="animate-spin" /> Saving...
+                  </>
+                )}
               </Button>
             </div>
           </DialogFooter>

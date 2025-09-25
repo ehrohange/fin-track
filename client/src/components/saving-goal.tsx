@@ -109,8 +109,17 @@ const SavingGoal = ({
       setOpen(false);
       toast(<ToastContent icon="success" message={res.data.message} />);
       setProcessing(false);
-    } catch (error) {
-      toast(<ToastContent icon="error" message="Error updating goal." />);
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
+        <ToastContent
+          icon="error"
+          message="There was an error updating goal. Please try again."
+        />
+      );
+      }
       setProcessing(false);
     }
   };
@@ -135,14 +144,18 @@ const SavingGoal = ({
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal archived!" />);
       setProcessing(false); // ✅ stop spinner
-    } catch (error) {
-      setProcessing(false);
-      toast(
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
         <ToastContent
           icon="error"
-          message="Error archiving goal. Please try again."
+          message="There was an error archiving goal. Please try again."
         />
       );
+      }
+      setProcessing(false);
     }
   };
 
@@ -166,14 +179,18 @@ const SavingGoal = ({
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal unarchived!" />);
       setProcessing(false); // ✅ stop spinner
-    } catch (error) {
-      setProcessing(false);
-      toast(
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
         <ToastContent
           icon="error"
-          message="Error unarchiving goal. Please try again."
+          message="There was an error unarchiving goal. Please try again."
         />
       );
+      }
+      setProcessing(false);
     }
   };
 
@@ -215,11 +232,18 @@ const SavingGoal = ({
       setFormData({ ...formData, amount: null }); // reset form
       setProcessing(false);
       setOpen(false);
-    } catch {
-      setProcessing(false);
-      toast(
-        <ToastContent icon="error" message="Failed to create transaction." />
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
+        <ToastContent
+          icon="error"
+          message="There was an adding transaction. Please try again."
+        />
       );
+      }
+      setProcessing(false);
     }
   };
 

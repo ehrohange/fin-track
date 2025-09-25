@@ -54,13 +54,17 @@ const DeleteTransaction = ({ userId, _id, onDeleted }: DeleteTransProps) => {
       onDeleted?.(_id); // 👈 tell parent to remove from state
       toast(<ToastContent icon="success" message={success.data.message} />);
       setProcessing(false);
-    } catch (error) {
-      toast(
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
         <ToastContent
           icon="error"
           message="There was an error deleting this transaction. Please try again."
         />
       );
+      }
       setProcessing(false);
     }
   };

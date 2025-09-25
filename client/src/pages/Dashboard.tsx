@@ -117,7 +117,22 @@ const Dashboard = () => {
         });
         // store goals directly in Redux
         dispatch(setGoals(res.data.goals));
-      } catch (err) {
+      } catch (error: any) {
+        if (error.response.status === 429) {
+          toast(
+            <ToastContent
+              icon="error"
+              message="Too many requests! Please try again later."
+            />
+          );
+        } else {
+          toast(
+            <ToastContent
+              icon="error"
+              message="There was an error fetching your goals. Please try again."
+            />
+          );
+        }
         dispatch(setGoalsError("Failed to fetch goals"));
       } finally {
         dispatch(setGoalsLoading(false));
@@ -187,10 +202,22 @@ const Dashboard = () => {
             new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         dispatch(setTransactions(sorted));
-      } catch (error) {
-        toast(
-          <ToastContent icon="error" message="Failed to fetch transactions." />
-        );
+      } catch (error: any) {
+        if (error.response.status === 429) {
+          toast(
+            <ToastContent
+              icon="error"
+              message="Too many requests! Please try again later."
+            />
+          );
+        } else {
+          toast(
+            <ToastContent
+              icon="error"
+              message="There was an error fetching your transactions. Please try again."
+            />
+          );
+        }
       }
     };
 

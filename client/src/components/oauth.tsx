@@ -58,14 +58,22 @@ const OAuth = () => {
         }
       }
     } catch (error: any) {
-      console.error(error);
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="There was an error creating goal. Please try again."
+          />
+        );
+      }
       dispatch(loginFailure(error.message));
-      toast(
-        <ToastContent
-          icon="error"
-          message="Google login failed. Please try again."
-        />
-      );
     }
   };
 

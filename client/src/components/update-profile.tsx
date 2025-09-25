@@ -120,9 +120,18 @@ const UpdateProfile = () => {
         throw new Error("Unexpected response");
       }
     } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
+        <ToastContent
+          icon="error"
+          message="There was an error updating your profile. Please try again."
+        />
+      );
+      }
       dispatch(updateUserFailure(error.message || "Update failed"));
       setProcessing(false);
-      toast(<ToastContent icon="error" message="Update failed!" />);
     }
   };
 
@@ -251,13 +260,17 @@ const DeleteAlertDialog = () => {
         );
         navigate("/login");
       }
-    } catch (error) {
-      toast(
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
         <ToastContent
           icon="error"
-          message="Account deletion failed. Please try again."
+          message="There was an error deleting your account. Please try again."
         />
       );
+      }
       setProcessing(false);
     }
   };

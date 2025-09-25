@@ -14,6 +14,7 @@ import {
   Banknote,
   PlusCircle,
   Eye,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -74,6 +75,7 @@ const Transactions = () => {
   const [total, setTotal] = useState<number>(0);
   const dispatch = useDispatch();
   const token = useAuthHeader();
+  const [processing, setProcessing] = useState<boolean>(false);
 
   const currentGoals = useSelector((state: RootState) => state.goals.goals);
   const activeGoals = currentGoals.filter((goal) => goal.active === true);
@@ -141,6 +143,7 @@ const Transactions = () => {
     e.preventDefault();
 
     try {
+      setProcessing(true);
       if (!formData.amount || !value || !formData.description) {
         return toast(
           <ToastContent icon="error" message="All fields are required." />
@@ -167,10 +170,24 @@ const Transactions = () => {
       // ✅ reset form
       setFormData({ description: "", amount: null });
       setValue("");
-    } catch (error) {
-      toast(
-        <ToastContent icon="error" message="Failed to create transaction." />
-      );
+      setProcessing(false);
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="There was an error creating transaction. Please try again."
+          />
+        );
+      }
+      setProcessing(false);
     }
   };
 
@@ -198,8 +215,22 @@ const Transactions = () => {
           },
         });
         setCategories(res.data.categories);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
+      } catch (error: any) {
+        if (error.response.status === 429) {
+          toast(
+            <ToastContent
+              icon="error"
+              message="Too many requests! Please try again later."
+            />
+          );
+        } else {
+          toast(
+            <ToastContent
+              icon="error"
+              message="There was an error fetching categories. Please try again."
+            />
+          );
+        }
       }
     };
     fetchCategories();
@@ -407,9 +438,17 @@ const Transactions = () => {
                   />
                 </div>
               </TabsContent>
-              <Button type="submit">
-                <PlusCircle />
-                Add Transaction
+              <Button type="submit" disabled={processing}>
+                {!processing ? (
+                  <>
+                    <PlusCircle />
+                    Add Transaction
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="animate-spin" /> Adding...
+                  </>
+                )}
               </Button>
             </Tabs>
           </Card>

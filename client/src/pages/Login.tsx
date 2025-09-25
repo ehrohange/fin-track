@@ -63,10 +63,7 @@ const Login = () => {
       }
 
       dispatch(loginStart());
-      const res = await api.post(
-        "/auth/login",
-        formData
-      );
+      const res = await api.post("/auth/login", formData);
 
       if (res.status === 200 && res.data.access_token) {
         const data = res.data;
@@ -103,11 +100,22 @@ const Login = () => {
       }
       setSubmitting(false);
     } catch (error: any) {
-      const msg =
-        error.response?.data?.message ||
-        "Something went wrong. Please try again.";
-      dispatch(loginFailure(msg));
-      toast(<ToastContent icon="error" message={msg} />);
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="There was an logging you in. Please try again."
+          />
+        );
+      }
+      dispatch(loginFailure(error));
       setSubmitting(false);
     }
   };

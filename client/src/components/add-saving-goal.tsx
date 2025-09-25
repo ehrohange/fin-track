@@ -149,14 +149,17 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
       setOpen(false);
       setProcessing(false);
       setOpenSG(false);
-    } catch (error) {
-      console.error(error);
-      toast(
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
         <ToastContent
           icon="error"
           message="There was an error creating goal. Please try again."
         />
       );
+      }
       setProcessing(false);
     }
   };
@@ -174,8 +177,17 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
           },
         });
         setCategories(res.data.categories);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
+      } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+      } else {
+        toast(
+        <ToastContent
+          icon="error"
+          message="Failed to fetch categories. Please try again."
+        />
+      );
+      }
       }
     };
     fetchCategories();
