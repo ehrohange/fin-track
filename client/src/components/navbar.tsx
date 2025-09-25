@@ -77,7 +77,7 @@ const Navbar = () => {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col gap-0 pr-4 min-w-0 mt-[-2px] overflow-clip">
-                    <h1 className="font-medium text-sm truncate">
+                    <h1 className="font-medium text-left text-sm truncate">
                       {currentUser?.fullName ?? ""}
                     </h1>
                     <p className="text-secondary truncate text-xs">
