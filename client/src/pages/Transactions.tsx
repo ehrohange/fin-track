@@ -37,7 +37,6 @@ import { Input } from "@/components/ui/input";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
-import { type Goal, type Transaction } from "@/lib/types-index";
 import { useDispatch } from "react-redux";
 import TransactionTable from "@/components/transaction-table";
 import {
@@ -65,6 +64,7 @@ import {
 import AddSavingGoal from "@/components/add-saving-goal";
 import SavingGoal from "@/components/saving-goal";
 import { addTransaction } from "@/redux/transaction/transactionsSlice";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const Transactions = () => {
   const [open, setOpen] = useState(false);
@@ -73,6 +73,7 @@ const Transactions = () => {
   const [tab, setTab] = useState("income"); // current selected tab
   const [total, setTotal] = useState<number>(0);
   const dispatch = useDispatch();
+  const token = useAuthHeader();
 
   const currentGoals = useSelector((state: RootState) => state.goals.goals);
   const activeGoals = currentGoals.filter((goal) => goal.active === true);
@@ -151,6 +152,11 @@ const Transactions = () => {
         {
           ...formData,
           date: formatDate(date), // backend expects "Aug 30 2025"
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
         }
       );
 
@@ -186,7 +192,11 @@ const Transactions = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await api.get(`/finance/categories`);
+        const res = await api.get(`/finance/categories`, {
+          headers: {
+            Authorization: token,
+          },
+        });
         setCategories(res.data.categories);
       } catch (error) {
         console.error("Failed to fetch categories", error);
@@ -319,9 +329,15 @@ const Transactions = () => {
               <div className="grid gap-3">
                 <Label>Type of Transaction</Label>
                 <TabsList className="w-full">
-                  <TabsTrigger value="income">Income</TabsTrigger>
-                  <TabsTrigger value="savings">Savings</TabsTrigger>
-                  <TabsTrigger value="expense">Expense</TabsTrigger>
+                  <TabsTrigger value="income" className="cursor-pointer">
+                    Income
+                  </TabsTrigger>
+                  <TabsTrigger value="savings" className="cursor-pointer">
+                    Savings
+                  </TabsTrigger>
+                  <TabsTrigger value="expense" className="cursor-pointer">
+                    Expense
+                  </TabsTrigger>
                 </TabsList>
               </div>
 

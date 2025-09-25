@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import ToastContent from "./toastcontent";
 import { useDispatch, useSelector } from "react-redux";
 import { addGoal } from "@/redux/goal/goalsSlice";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 interface AddSavingGoalProps {
   small?: boolean;
@@ -45,6 +46,8 @@ interface AddSavingGoalProps {
 
 const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
   const dispatch = useDispatch();
+  const token = useAuthHeader();
+
   const [processing, setProcessing] = useState<boolean>(false);
 
   const currentUser = useSelector((state: any) => state.user.currentUser);
@@ -111,9 +114,18 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
         return;
       }
 
+      if (!token) {
+        toast(<ToastContent icon="error" message="Unauthorized access." />);
+      }
+      
       const res = await api.post(
         `/finance/goal/${currentUser._id}/${value}`,
-        formData
+        formData,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
       );
 
       if (res.status !== 201) {
@@ -152,7 +164,15 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await api.get(`/finance/categories`);
+        if(!token) {
+          toast(<ToastContent icon="error" message="Unauthorized access." />);
+        }
+        const res = await api.get(`/finance/categories`,
+        {
+          headers: {
+            Authorization: token,
+          },
+        });
         setCategories(res.data.categories);
       } catch (error) {
         console.error("Failed to fetch categories", error);

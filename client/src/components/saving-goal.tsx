@@ -45,6 +45,8 @@ import { Calendar } from "./ui/calendar";
 import type { AppDispatch, RootState } from "@/redux/store";
 import { updateGoal } from "@/redux/goal/goalsSlice";
 import DeleteGoal from "./delete-goal";
+import { addTransaction } from "@/redux/transaction/transactionsSlice";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 type SavingGoalProps = {
   goal: Goal;
@@ -63,6 +65,7 @@ const SavingGoal = ({
   const dispatch = useDispatch<AppDispatch>();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("trans");
+  const token = useAuthHeader();
 
   const formatDate = (d: Date | undefined) => {
     if (!d) return "";
@@ -97,8 +100,11 @@ const SavingGoal = ({
         setProcessing(false);
         return;
       }
-      const res = await api.patch(`/finance/goal/${goal._id}`, goalData);
-      console.log(res);
+      const res = await api.patch(`/finance/goal/${goal._id}`, goalData, {
+        headers: {
+          Authorization: token,
+        },
+      });
       dispatch(updateGoal(res.data.updatedGoal));
       setOpen(false);
       toast(<ToastContent icon="success" message={res.data.message} />);
@@ -120,7 +126,11 @@ const SavingGoal = ({
         setProcessing(false);
         return;
       }
-      const res = await api.patch(`/finance/goal/deactivate/${goal._id}`);
+      const res = await api.patch(`/finance/goal/deactivate/${goal._id}`, {}, {
+        headers: {
+          Authorization: token,
+        },
+      });
       dispatch(updateGoal(res.data.updatedGoal));
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal archived!" />);
@@ -147,7 +157,11 @@ const SavingGoal = ({
         setProcessing(false);
         return;
       }
-      const res = await api.patch(`/finance/goal/activate/${goal._id}`);
+      const res = await api.patch(`/finance/goal/activate/${goal._id}`, {}, {
+        headers: {
+          Authorization: token,
+        },
+      });
       dispatch(updateGoal(res.data.updatedGoal));
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal unarchived!" />);
@@ -179,6 +193,11 @@ const SavingGoal = ({
         {
           ...formData,
           date: formatDate(today),
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
         }
       );
 
@@ -189,11 +208,13 @@ const SavingGoal = ({
           amount: goal.amount + formData.amount,
         })
       );
+      dispatch(addTransaction(res.data.transaction));
       if (typeof setTransactions === "function") {
         setTransactions((prev: any[]) => [res.data.transaction, ...prev]);
       }
       setFormData({ ...formData, amount: null }); // reset form
       setProcessing(false);
+      setOpen(false);
     } catch {
       setProcessing(false);
       toast(
@@ -487,8 +508,12 @@ const SavingGoal = ({
           ) : (
             <Tabs defaultValue={tab} value={tab} onValueChange={setTab}>
               <TabsList className="w-full mb-2">
-                <TabsTrigger value="trans">Add Amount</TabsTrigger>
-                <TabsTrigger value="edit">Update Goal</TabsTrigger>
+                <TabsTrigger value="trans" className="cursor-pointer">
+                  Add Amount
+                </TabsTrigger>
+                <TabsTrigger value="edit" className="cursor-pointer">
+                  Update Goal
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="trans">

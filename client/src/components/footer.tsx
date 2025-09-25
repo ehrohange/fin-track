@@ -3,8 +3,8 @@ import { Button } from "./ui/button";
 
 const Footer = () => {
   return (
-    <div className="w-full bg-card border-t-2">
-      <div className="max-w-6xl flex items-center justify-between mx-auto py-20">
+    <div className="w-full bg-card border-t-2 px-4">
+      <div className="max-w-6xl flex items-center justify-between mx-auto min-h-44">
         <Link to="/" className="w-fit gap-1">
           <Button variant={"ghost"} className="ml-[-20px] md:ml-0">
             <span className="logo !bg-accent"></span>

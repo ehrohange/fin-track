@@ -54,6 +54,7 @@ import {
 import type { User } from "@/lib/types-index";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { useNavigate } from "react-router-dom";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const UpdateProfile = () => {
   // const fileRef = useRef<HTMLInputElement>(null);
@@ -62,6 +63,7 @@ const UpdateProfile = () => {
   const dispatch = useDispatch();
   const signIn = useSignIn();
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
+  const token = useAuthHeader();
   const [formData, setFormData] = useState({
     profilePicture:
       currentUser?.profilePicture ||
@@ -81,9 +83,17 @@ const UpdateProfile = () => {
     dispatch(updateUserStart());
     setProcessing(true);
     try {
-      const res = await api.patch(`/users/name/${userId}`, {
-        fullName: formData.fullName,
-      });
+      const res = await api.patch(
+        `/users/name/${userId}`,
+        {
+          fullName: formData.fullName,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
 
       if (res.status === 200 && res.data.access_token) {
         // ✅ Save new token in auth-kit
@@ -213,6 +223,7 @@ const DeleteAlertDialog = () => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const signOut = useSignOut();
   const navigate = useNavigate();
+  const token = useAuthHeader();
   const [processing, setProcessing] = useState<boolean>(false);
   const handleDeleteUser = async () => {
     const userId = currentUser?._id;
@@ -220,7 +231,11 @@ const DeleteAlertDialog = () => {
     dispatch(deleteUserStart());
     setProcessing(true);
     try {
-      const res = await api.delete(`/users/${userId}`);
+      const res = await api.delete(`/users/${userId}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
       if (res.status === 200) {
         dispatch(deleteUserSuccess());
         signOut();

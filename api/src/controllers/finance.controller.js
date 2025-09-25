@@ -3,6 +3,7 @@ import Category from "../Models/Category.js";
 import { errorHandler } from "../utils/error.js";
 import User from "../Models/User.js";
 import Goal from "../Models/Goal.js";
+import Budget from "../Models/Budget.js";
 
 export const createCategory = async (req, res, next) => {
   const { name, type, color } = req.body;
@@ -519,3 +520,18 @@ export const deleteGoal = async (req, res, next) => {
     next(error);
   }
 };
+
+export const setMonthlyBudget = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { amountLimit } = req.body;
+    const user = await User.findById(userId);
+    if (!user) return next(errorHandler(404, "User does not exist."));
+    const existing = await Budget.findOne(userId);
+    if(existing) return next(errorHandler(400), "Monthly budget already set.");
+    const monthlyBudget = await Budget.create({userId, amountLimit});
+    return res.status(201).json({ message: "Monthly budget set!", monthlyBudget})
+  } catch (error) {
+    
+  }
+}

@@ -30,7 +30,7 @@ const TransactionTable = ({
   date,
 }: TransactionTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow);
@@ -176,7 +176,7 @@ const TransactionTable = ({
         </>
       ) : (
         <div className="relative">
-          <img src="/emptytrans.webp" alt="empty transactions" />
+          <img src="/emptytrans.webp" alt="empty transactions" className="mx-auto max-w-2xl" />
           <Card className="absolute inset-0 m-auto py-2 w-fit h-fit">
             <CardContent className="flex items-center justify-center gap-2 text-destructive">
               <Banknote />

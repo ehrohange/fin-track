@@ -44,7 +44,7 @@ export interface Transaction {
   categoryId: {
     _id: string;
     color: string;
-    type: string;
+    type: TransactionType;
     name: string;
   };
   amount: number;
@@ -97,3 +97,31 @@ export interface GoalSubmission {
   goalAmount: number | null;
   goalDeadline: string;
 }
+
+export type ChartEntry = {
+  periodLabel: string;
+  income: number;
+  savings: number;
+  expenses: number;
+}
+
+export type TransactionType = "income" | "expense" | "savings";
+
+export interface TransactionForChart {
+  _id: string;
+  amount: number;
+  date: string;
+  categoryId: {
+    _id: string;
+    color: string;
+    type: TransactionType; // ✅ not just string
+    name: string;
+  };
+}
+
+export type ChartData = {
+  label: string;
+  income: number;
+  expenses: number;
+  savings: number;
+};

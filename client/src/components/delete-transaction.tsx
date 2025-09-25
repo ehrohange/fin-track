@@ -16,6 +16,7 @@ import ToastContent from "./toastcontent";
 import { useDispatch } from "react-redux";
 import { updateGoal } from "@/redux/goal/goalsSlice";
 import { useState } from "react";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 interface DeleteTransProps {
   userId: string;
@@ -26,11 +27,22 @@ interface DeleteTransProps {
 const DeleteTransaction = ({ userId, _id, onDeleted }: DeleteTransProps) => {
   const [processing, setProcessing] = useState<boolean>(false);
   const dispatch = useDispatch();
+  const token = useAuthHeader();
 
   const handleDeleteTransaction = async () => {
     try {
       setProcessing(true);
-      const success = await api.delete(`/finance/transaction/${userId}/${_id}`);
+      if (!token) {
+        toast(<ToastContent icon="error" message="Unauthorized access." />);
+      }
+      const success = await api.delete(
+        `/finance/transaction/${userId}/${_id}`,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
       if (success.status === 404) {
         toast(<ToastContent icon="error" message="User not found." />);
         setProcessing(false);

@@ -18,9 +18,11 @@ import type { RootState } from "@/redux/store";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import ToastContent from "./toastcontent";
 import { toast } from "sonner";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const UpdatePassword = () => {
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
+  const token = useAuthHeader();
 
   const userId = currentUser?._id;
   const [formData, setFormData] = useState({
@@ -44,9 +46,17 @@ const UpdatePassword = () => {
         toast(<ToastContent icon="error" message="Passwords do not match!" />);
         return;
       }
-      const res = await api.patch(`/users/password/${userId}`, {
-        newPassword: formData.newPassword,
-      });
+      const res = await api.patch(
+        `/users/password/${userId}`,
+        {
+          newPassword: formData.newPassword,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
       if (res.status === 200) {
         toast(<ToastContent icon="success" message={res.data.message} />);
         setFormData({ newPassword: "", confirmNewPassword: "" });

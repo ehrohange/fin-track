@@ -10,7 +10,6 @@ import {
   BanknoteX,
   ChartColumn,
   Eye,
-  TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -46,11 +45,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { groupTransactions } from "@/lib/group-transactions";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+
+const chartConfig = {
+  income: {
+    label: "Income",
+    color: "#009F00",
+  },
+  savings: {
+    label: "Savings",
+    color: "#DADADA",
+  },
+  expense: {
+    label: "Expenses",
+    color: "#EC5E61",
+  },
+} satisfies ChartConfig;
 
 const Dashboard = () => {
   const [total, setTotal] = useState<number>(0);
   const [totalIncome, setTotalIncome] = useState<number>(0);
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
+  const [totalSavings, setTotalSavings] = useState<number>(0);
+  const token = useAuthHeader();
 
   const date = new Date();
 
@@ -77,7 +110,11 @@ const Dashboard = () => {
       if (!currentUser?._id) return;
       try {
         dispatch(setGoalsLoading(true));
-        const res = await api.get(`/finance/goals/${currentUser._id}`);
+        const res = await api.get(`/finance/goals/${currentUser._id}`, {
+          headers: {
+            Authorization: token,
+          },
+        });
         // store goals directly in Redux
         dispatch(setGoals(res.data.goals));
       } catch (err) {
@@ -139,7 +176,11 @@ const Dashboard = () => {
       if (!currentUser?._id) return;
       try {
         dispatch(setTransactionsLoading(true));
-        const res = await api.get(`/finance/transactions/${currentUser._id}`);
+        const res = await api.get(`/finance/transactions/${currentUser._id}`, {
+          headers: {
+            Authorization: token,
+          },
+        });
 
         const sorted = res.data.transactions.sort(
           (a: Transaction, b: Transaction) =>
@@ -169,6 +210,7 @@ const Dashboard = () => {
     setTotal(income - (expense + savings));
     setTotalIncome(income);
     setTotalExpenses(expense);
+    setTotalSavings(savings);
   }, [filteredTransactions]);
 
   const toPeso = (num: number) => {
@@ -202,6 +244,7 @@ const Dashboard = () => {
   };
 
   const firstName = currentUser?.fullName.split(" ")[0] || "User";
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-baseline p-4">
       {loadingGoals && loadingTrans ? (
@@ -255,7 +298,8 @@ const Dashboard = () => {
               <div className="grid grid-cols-2 gap-3 md:flex md:justify-end md:min-w-36">
                 <Link to={"/transactions"} className="w-full flex-1 md:hidden">
                   <Button className="w-full">
-                    Go to Transactions <ArrowRight />
+                    <span className="hidden sm:inline-block">Go to</span>{" "}
+                    Transactions <ArrowRight />
                   </Button>
                 </Link>
                 <Select value={period} onValueChange={setPeriod}>
@@ -376,9 +420,80 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               </div>
+              {filteredTransactions.length > 0 && (
+                <Accordion type="single" className="mt-[-1rem]" collapsible>
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger className="mx-auto flex flex-col gap-0 items-center w-full">
+                      <h1>Transactions Overview</h1>
+                      <p className="text-center text-sm font-light text-white/80">
+                        View Graph
+                      </p>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <Card className="w-full pl-0 py-4 pr-4 md:pr-8">
+                        <ChartContainer
+                          config={chartConfig}
+                          className="w-full h-full max-h-[200px]"
+                        >
+                          <BarChart
+                            data={groupTransactions(
+                              filteredTransactions,
+                              period as "month" | "year" | "all"
+                            )}
+                            className="mx-auto"
+                            accessibilityLayer
+                          >
+                            <CartesianGrid vertical={false} />
+                            <ChartLegend
+                              content={<ChartLegendContent />}
+                              verticalAlign="top"
+                              align="center"
+                              className="!ml-8"
+                            />
+                            <XAxis
+                              dataKey="label"
+                              tickLine={false}
+                              tickMargin={10}
+                              axisLine={false}
+                            />
+                            <YAxis
+                              tickLine={false}
+                              axisLine={false}
+                              tickFormatter={(value: number) =>
+                                formatCompactPeso(value)
+                              }
+                            />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Bar
+                              name={"Income"}
+                              dataKey="income"
+                              fill="#009F00"
+                              radius={2}
+                            />
+                            <Bar
+                              name={"Savings"}
+                              dataKey="savings"
+                              fill="#DDDDDD"
+                              radius={2}
+                            />
+                            <Bar
+                              name={"Expenses"}
+                              dataKey="expense"
+                              fill="#EC5E61"
+                              radius={2}
+                            />
+                          </BarChart>
+                        </ChartContainer>
+                      </Card>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              )}
             </div>
+
+            {filteredTransactions.length == 0 && <span className="mt-3"></span>}
             {/* SAVINGS */}
-            <div className="w-full grid gap-3 mt-6">
+            <div className="w-full grid gap-3">
               <hr />
               {activeGoals.length > 0 ? (
                 <Carousel className="max-w-full overflow-hidden pt-2">
