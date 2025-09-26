@@ -111,6 +111,13 @@ const Login = () => {
             message="Too many requests! Please try again later."
           />
         );
+      } else if (error.response.status === 401) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="You've entered the wrong email or password. Please try again."
+          />
+        );
       } else {
         toast(
           <ToastContent
