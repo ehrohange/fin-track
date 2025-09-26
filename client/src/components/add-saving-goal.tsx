@@ -39,6 +39,7 @@ import ToastContent from "./toastcontent";
 import { useDispatch, useSelector } from "react-redux";
 import { addGoal } from "@/redux/goal/goalsSlice";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import type { RootState } from "@/redux/store";
 
 interface AddSavingGoalProps {
   small?: boolean;
@@ -53,7 +54,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
   const currentUser = useSelector((state: any) => state.user.currentUser);
 
   const [open, setOpen] = useState<boolean>(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const categories = useSelector((state: RootState) => state.categories.categories);
   const [value, setValue] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [openSG, setOpenSG] = useState<boolean>(false);
@@ -117,7 +118,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
       if (!token) {
         toast(<ToastContent icon="error" message="Unauthorized access." />);
       }
-      
+
       const res = await api.post(
         `/finance/goal/${currentUser._id}/${value}`,
         formData,
@@ -151,47 +152,23 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
       setOpenSG(false);
     } catch (error: any) {
       if (error.response.status === 429) {
-        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
       } else {
         toast(
-        <ToastContent
-          icon="error"
-          message="There was an error creating goal. Please try again."
-        />
-      );
+          <ToastContent
+            icon="error"
+            message="There was an error creating goal. Please try again."
+          />
+        );
       }
       setProcessing(false);
     }
   };
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        if(!token) {
-          toast(<ToastContent icon="error" message="Unauthorized access." />);
-        }
-        const res = await api.get(`/finance/categories`,
-        {
-          headers: {
-            Authorization: token,
-          },
-        });
-        setCategories(res.data.categories);
-      } catch (error: any) {
-      if (error.response.status === 429) {
-        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
-      } else {
-        toast(
-        <ToastContent
-          icon="error"
-          message="Failed to fetch categories. Please try again."
-        />
-      );
-      }
-      }
-    };
-    fetchCategories();
-  }, []);
 
   const filteredCategories = categories.filter((c) => c.type === "savings");
 

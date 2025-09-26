@@ -26,6 +26,7 @@ import {
 import OAuth from "@/components/oauth";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { setCategories } from "@/redux/categories/categoriesSlice";
 
 const Login = () => {
   useGSAP(() => {
@@ -90,6 +91,9 @@ const Login = () => {
             exp: decodedUser.exp,
             // add other properties if your User type requires them
           };
+
+          const res = await api.get(`/finance/categories`);
+          dispatch(setCategories(res.data.categories));
           dispatch(loginSuccess(user));
 
           toast(
@@ -111,7 +115,7 @@ const Login = () => {
         toast(
           <ToastContent
             icon="error"
-            message="There was an logging you in. Please try again."
+            message="There was an error logging you in. Please try again."
           />
         );
       }

@@ -69,7 +69,7 @@ import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const Transactions = () => {
   const [open, setOpen] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const categories = useSelector((state: RootState) => state.categories.categories);
   const [value, setValue] = useState(""); // selected category
   const [tab, setTab] = useState("income"); // current selected tab
   const [total, setTotal] = useState<number>(0);
@@ -205,36 +205,6 @@ const Transactions = () => {
       dispatch(transactionDateSelectFailure("Error updating date."));
     }
   }, [date]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await api.get(`/finance/categories`, {
-          headers: {
-            Authorization: token,
-          },
-        });
-        setCategories(res.data.categories);
-      } catch (error: any) {
-        if (error.response.status === 429) {
-          toast(
-            <ToastContent
-              icon="error"
-              message="Too many requests! Please try again later."
-            />
-          );
-        } else {
-          toast(
-            <ToastContent
-              icon="error"
-              message="There was an error fetching categories. Please try again."
-            />
-          );
-        }
-      }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     let income = 0;

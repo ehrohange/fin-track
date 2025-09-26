@@ -19,9 +19,9 @@ import rateLimiter from "../middleware/rateLimiter.js";
 
 const router = Router();
 
-router.get("/categories", authenticateUser, rateLimiter, getCategories);
-router.get("/categories/:type", authenticateUser, rateLimiter, getCategoriesByType);
-router.post("/category", authenticateUser, rateLimiter, createCategory);
+router.get("/categories", getCategories);
+router.get("/categories/:type", getCategoriesByType);
+router.post("/category", createCategory);
 router.post("/transaction/:userId/:categoryId", authenticateUser, rateLimiter, createTransaction);
 router.get("/transactions/:userId", authenticateUser, rateLimiter, getTransactionsByUserId);
 router.get("/transactionsByDate/:userId", authenticateUser, rateLimiter, getTransactionsByUserIdAndDate);

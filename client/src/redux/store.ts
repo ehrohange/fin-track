@@ -7,11 +7,13 @@ import userReducer from "./user/userSlice";
 import transactionDateReducer from "./transaction/transactionPageDateSlice";
 import goalsReducer from "./goal/goalsSlice";
 import transactionsReducer from "./transaction/transactionsSlice";
+import categoriesReducer from "./categories/categoriesSlice";
 import { resetState } from "./resetActions";
 
 const appReducer = combineReducers({
   user: userReducer,
   transactionDate: transactionDateReducer,
+  categories: categoriesReducer,
   goals: goalsReducer,
   transactions: transactionsReducer
 });

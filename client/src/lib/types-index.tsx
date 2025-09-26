@@ -125,3 +125,12 @@ export type ChartData = {
   expenses: number;
   savings: number;
 };
+
+export type CategoryType = "income" | "expense" | "savings";
+
+export interface Category {
+  _id: string;
+  name: string;
+  type: CategoryType;
+  color: string;
+}
