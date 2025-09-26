@@ -1,7 +1,15 @@
 import AddSavingGoal from "@/components/add-saving-goal";
 import SavingGoal from "@/components/saving-goal";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import type { RootState } from "@/redux/store";
+import { GoalIcon } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
@@ -36,7 +44,10 @@ const Goals = () => {
     .reverse();
 
   return (
-    <section className="w-full h-full flex flex-col items-center justify-baseline p-4">
+    <section className="relative w-full h-full flex flex-col items-center justify-baseline p-4 animate-in fade-in animation-duration-[1s]">
+      <div className="absolute w-full h-full flex items-center justify-center top-0 left-0 z-[-1]">
+        <GoalIcon className="size-96 rotate-[-35deg] opacity-5" />
+      </div>
       <div className="w-full max-w-6xl">
         <Breadcrumb className="mb-4">
           <BreadcrumbList>

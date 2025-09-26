@@ -10,6 +10,7 @@ import {
   BanknoteX,
   ChartColumn,
   Eye,
+  GoalIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -62,6 +63,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import MonthlyBudget from "@/components/monthly-budget";
 
 const chartConfig = {
   income: {
@@ -273,7 +275,7 @@ const Dashboard = () => {
   const firstName = currentUser?.fullName.split(" ")[0] || "User";
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-baseline p-4">
+    <div className="w-full h-full flex flex-col items-center justify-baseline px-4 pt-4 pb-10">
       {loadingGoals && loadingTrans ? (
         <section className="w-full grid gap-3 max-w-6xl">
           <div className="w-full flex flex-col gap-2 md:flex-row md:justify-between md:items-end">
@@ -312,7 +314,7 @@ const Dashboard = () => {
         </section>
       ) : (
         <>
-          <section className="w-full grid gap-3 max-w-6xl">
+          <section className="w-full grid gap-3 max-w-6xl animate-in fade-in animation-duration-[1s]">
             <div className="w-full flex flex-col gap-2 md:flex-row md:justify-between md:items-end">
               <div className="grid gap-3">
                 <h4 className="text-white/80">
@@ -412,7 +414,7 @@ const Dashboard = () => {
                     <ChartColumn className="size-12 text-white/95" />
                   </CardContent>
                 </Card>
-                <Card className="p-4 relative overflow-clip group">
+                <Card className="p-4 relative overflow-clip group border-destructive">
                   <div className="absolute top-0 right-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
                     <img src="/expense.webp" className="h-fit" alt="" />
                   </div>
@@ -448,9 +450,13 @@ const Dashboard = () => {
                 </Card>
               </div>
               {filteredTransactions.length > 0 && (
-                <Accordion type="single" className="mt-[-1rem]" collapsible>
+                <Accordion
+                  type="single"
+                  className="mt-[-0.5rem] mb-[-1rem]"
+                  collapsible
+                >
                   <AccordionItem value="item-1">
-                    <AccordionTrigger className="mx-auto flex flex-col gap-0 items-center w-full">
+                    <AccordionTrigger className="mx-auto flex flex-col gap-0 items-center w-full cursor-pointer">
                       <h1>Transactions Overview</h1>
                       <p className="text-center text-sm font-light text-white/80">
                         View Graph
@@ -519,6 +525,20 @@ const Dashboard = () => {
             </div>
 
             {filteredTransactions.length == 0 && <span className="mt-3"></span>}
+            <div className="grid gap-3 my-3">
+              <hr className="mb-2" />
+              <div className="grid gap-3">
+                <div className="grid gap-3">
+                  <h4 className="text-white/80">Here is your</h4>
+                  <h1 className="font-bold font-doto text-2xl sm:text-3xl mt-[-10px]">
+                    Monthly Budget
+                  </h1>
+                </div>
+                <div className="grid md:grid-cols-2">
+                  <MonthlyBudget />
+                </div>
+              </div>
+            </div>
             {/* SAVINGS */}
             <div className="w-full grid gap-3">
               <hr />

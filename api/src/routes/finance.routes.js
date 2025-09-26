@@ -13,6 +13,9 @@ import {
   deactivateGoal,
   activateGoal,
   deleteGoal,
+  setMonthlyBudget,
+  getMonthlyBudget,
+  updateMonthlyBudget,
 } from "../controllers/finance.controller.js";
 import { authenticateUser } from "../middleware/authMiddleware.js";
 import rateLimiter from "../middleware/rateLimiter.js";
@@ -32,4 +35,7 @@ router.patch("/goal/:goalId", authenticateUser, rateLimiter, updateGoal);
 router.patch("/goal/deactivate/:goalId", authenticateUser, rateLimiter, deactivateGoal);
 router.patch("/goal/activate/:goalId", authenticateUser, rateLimiter, activateGoal);
 router.delete("/goal/:goalId", authenticateUser, rateLimiter, deleteGoal);
+router.post("/budget/:userId", authenticateUser, rateLimiter, setMonthlyBudget);
+router.get("/budget/:userId", authenticateUser, rateLimiter, getMonthlyBudget);
+router.patch("/budget/:id", authenticateUser, rateLimiter, updateMonthlyBudget);
 export default router;

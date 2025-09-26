@@ -226,7 +226,8 @@ const Transactions = () => {
   const filteredCategories = categories.filter((c) => c.type === tab);
 
   return (
-    <div className="min-h-[calc(100vh-68px)] w-full flex flex-col justify-baseline items-start lg:items-center px-4 py-6 lg:min-h-0 lg:flex-grow">
+    <div className="min-h-[calc(100vh-68px)] w-full flex flex-col justify-baseline items-start
+    lg:items-center px-4 py-6 lg:min-h-0 lg:flex-grow animate-in fade-in animation-duration-[1s]">
       <section className="w-full max-w-6xl grid">
         <Breadcrumb className="mb-4">
           <BreadcrumbList>

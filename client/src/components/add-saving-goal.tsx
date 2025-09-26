@@ -179,7 +179,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
           <Card className="group bg-primary/75 hover:bg-primary/85 cursor-pointer h-full group hover:translate-y-[-4px] duration-200 overflow-hidden relative">
             <GoalIcon
               className="absolute top-2 size-60 right-[-3.5rem] rotate-[-35deg] text-white/30
-            group-hover:translate-y-[-6px] group-hover:text-white/65 group-hover:rotate-[325deg] duration-200"
+            group-hover:translate-y-[-6px] group-hover:text-white/45 group-hover:rotate-[325deg] duration-200"
             />
             <CardContent className="flex items-start justify-between gap-4 my-auto">
               <div className="grid gap-2">

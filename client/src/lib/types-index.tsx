@@ -134,3 +134,10 @@ export interface Category {
   type: CategoryType;
   color: string;
 }
+
+export interface MonthlyBudgetInterface {
+  _id: string;
+  userId: string;
+  amount?: number;
+  amountLimit: number;
+}

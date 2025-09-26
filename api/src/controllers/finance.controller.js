@@ -220,17 +220,16 @@ export const deleteTransaction = async (req, res, next) => {
 
       await Transaction.findByIdAndDelete(transactionId);
 
-      return res
-      .status(200)
-      .json({ message: "Transaction deleted and goal updated!", updatedGoal: populatedUpdatedGoal });
+      return res.status(200).json({
+        message: "Transaction deleted and goal updated!",
+        updatedGoal: populatedUpdatedGoal,
+      });
     }
 
     // Now delete the transaction
     await Transaction.findByIdAndDelete(transactionId);
 
-    return res
-      .status(200)
-      .json({ message: "Transaction deleted!"});
+    return res.status(200).json({ message: "Transaction deleted!" });
   } catch (error) {
     next(error);
   }
@@ -525,13 +524,50 @@ export const setMonthlyBudget = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { amountLimit } = req.body;
+    if (!userId) return next(errorHandler(400, "User ID is required."));
+    if (!amountLimit)
+      return next(errorHandler(400, "Amount Limit is required"));
     const user = await User.findById(userId);
     if (!user) return next(errorHandler(404, "User does not exist."));
-    const existing = await Budget.findOne(userId);
-    if(existing) return next(errorHandler(400), "Monthly budget already set.");
-    const monthlyBudget = await Budget.create({userId, amountLimit});
-    return res.status(201).json({ message: "Monthly budget set!", monthlyBudget})
+    const existing = await Budget.findOne({ userId });
+    if (existing) return next(errorHandler(400, "Monthly budget already set."));
+    const monthlyBudget = await Budget.create({ userId, amountLimit });
+    return res
+      .status(201)
+      .json({ message: "Monthly budget set!", budget: monthlyBudget });
   } catch (error) {
-    
+    next(error);
   }
-}
+};
+
+export const getMonthlyBudget = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) return next(errorHandler(404, "User does not exist."));
+    const budget = await Budget.findOne({ userId });
+    if (!budget) return;
+    return res.status(200).json({ message: "Monthly budget fetched!", budget });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateMonthlyBudget = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { amountLimit } = req.body;
+    const updatedBudget = await Budget.findByIdAndUpdate(
+      id,
+      { amountLimit },
+      { new: true, runValidators: true }
+    );
+    if (!updatedBudget)
+      return next(errorHandler(404, "Monthly budget not found."));
+    return res
+      .status(200)
+      .json({ message: "Monthly budget updated!", budget: updatedBudget });
+  } catch (error) {
+    next(error);
+  }
+};

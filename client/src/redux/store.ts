@@ -8,6 +8,7 @@ import transactionDateReducer from "./transaction/transactionPageDateSlice";
 import goalsReducer from "./goal/goalsSlice";
 import transactionsReducer from "./transaction/transactionsSlice";
 import categoriesReducer from "./categories/categoriesSlice";
+import monthlyBudgetReducer from "./budget/MonthlyBudgetSlice";
 import { resetState } from "./resetActions";
 
 const appReducer = combineReducers({
@@ -15,7 +16,8 @@ const appReducer = combineReducers({
   transactionDate: transactionDateReducer,
   categories: categoriesReducer,
   goals: goalsReducer,
-  transactions: transactionsReducer
+  transactions: transactionsReducer,
+  monthlyBudget: monthlyBudgetReducer,
 });
 
 const rootReducer = (state: any, action: any) => {
