@@ -290,6 +290,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
               <Input
                 type="number"
                 min={1}
+                max={1000000000}
                 step="0.01"
                 id="goalAmount"
                 value={formData.goalAmount ?? ""}

@@ -69,7 +69,9 @@ import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const Transactions = () => {
   const [open, setOpen] = useState(false);
-  const categories = useSelector((state: RootState) => state.categories.categories);
+  const categories = useSelector(
+    (state: RootState) => state.categories.categories
+  );
   const [value, setValue] = useState(""); // selected category
   const [tab, setTab] = useState("income"); // current selected tab
   const [total, setTotal] = useState<number>(0);
@@ -401,6 +403,7 @@ const Transactions = () => {
                     id="amount"
                     placeholder="Amount (₱)"
                     min={1}
+                    max={1000000000}
                     step="0.01"
                     required
                     value={formData.amount ?? ""}

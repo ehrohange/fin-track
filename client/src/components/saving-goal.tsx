@@ -111,14 +111,19 @@ const SavingGoal = ({
       setProcessing(false);
     } catch (error: any) {
       if (error.response.status === 429) {
-        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
       } else {
         toast(
-        <ToastContent
-          icon="error"
-          message="There was an error updating goal. Please try again."
-        />
-      );
+          <ToastContent
+            icon="error"
+            message="There was an error updating goal. Please try again."
+          />
+        );
       }
       setProcessing(false);
     }
@@ -135,25 +140,34 @@ const SavingGoal = ({
         setProcessing(false);
         return;
       }
-      const res = await api.patch(`/finance/goal/deactivate/${goal._id}`, {}, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      const res = await api.patch(
+        `/finance/goal/deactivate/${goal._id}`,
+        {},
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
       dispatch(updateGoal(res.data.updatedGoal));
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal archived!" />);
       setProcessing(false); // ✅ stop spinner
     } catch (error: any) {
       if (error.response.status === 429) {
-        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
       } else {
         toast(
-        <ToastContent
-          icon="error"
-          message="There was an error archiving goal. Please try again."
-        />
-      );
+          <ToastContent
+            icon="error"
+            message="There was an error archiving goal. Please try again."
+          />
+        );
       }
       setProcessing(false);
     }
@@ -170,25 +184,34 @@ const SavingGoal = ({
         setProcessing(false);
         return;
       }
-      const res = await api.patch(`/finance/goal/activate/${goal._id}`, {}, {
-        headers: {
-          Authorization: token,
-        },
-      });
+      const res = await api.patch(
+        `/finance/goal/activate/${goal._id}`,
+        {},
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
       dispatch(updateGoal(res.data.updatedGoal));
       setOpen(false);
       toast(<ToastContent icon="success" message="Goal unarchived!" />);
       setProcessing(false); // ✅ stop spinner
     } catch (error: any) {
       if (error.response.status === 429) {
-        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
       } else {
         toast(
-        <ToastContent
-          icon="error"
-          message="There was an error unarchiving goal. Please try again."
-        />
-      );
+          <ToastContent
+            icon="error"
+            message="There was an error unarchiving goal. Please try again."
+          />
+        );
       }
       setProcessing(false);
     }
@@ -234,14 +257,19 @@ const SavingGoal = ({
       setOpen(false);
     } catch (error: any) {
       if (error.response.status === 429) {
-        toast(<ToastContent icon="error" message="Too many requests! Please try again later." />)
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
       } else {
         toast(
-        <ToastContent
-          icon="error"
-          message="There was an adding transaction. Please try again."
-        />
-      );
+          <ToastContent
+            icon="error"
+            message="There was an adding transaction. Please try again."
+          />
+        );
       }
       setProcessing(false);
     }
@@ -551,6 +579,7 @@ const SavingGoal = ({
                       value={formData.amount ?? ""}
                       onChange={handleChange}
                       min={1}
+                      max={1000000000}
                       required
                     />
                   </div>
@@ -580,6 +609,7 @@ const SavingGoal = ({
                       value={goalData.goalAmount}
                       step={"0.01"}
                       min={1}
+                      max={1000000000}
                       onChange={handleAmountGoalChange}
                     />
                   </div>
