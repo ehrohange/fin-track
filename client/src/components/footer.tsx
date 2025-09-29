@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
-import { ArrowUpFromLine, Bug, Code } from "lucide-react";
+import { ArrowUpFromLine, Bug, Code, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -150,7 +150,15 @@ const Footer = () => {
                       />
                     </div>
                     <Button type="submit">
-                      <ArrowUpFromLine /> Submit Report
+                      {
+                        !processing ? (
+                          <>
+                          <ArrowUpFromLine /> Submit Report
+                          </>
+                        ) : (
+                          <><Loader2 className="animate-spin" /> Submitting...</>
+                        )
+                      }
                     </Button>
                   </form>
                 </DialogContent>

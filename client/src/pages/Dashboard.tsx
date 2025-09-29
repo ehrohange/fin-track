@@ -10,7 +10,6 @@ import {
   BanknoteX,
   ChartColumn,
   Eye,
-  GoalIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -527,6 +526,7 @@ const Dashboard = () => {
             {filteredTransactions.length == 0 && <span className="mt-3"></span>}
             <div className="grid gap-3 my-3">
               <hr className="mb-2" />
+              <span className="hidden">{totalSavings}</span>
               <div className="grid gap-3">
                 <div className="grid gap-3">
                   <h4 className="text-white/80">Here is your</h4>

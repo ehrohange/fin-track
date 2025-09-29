@@ -28,7 +28,7 @@ import {
   CommandItem,
   CommandList,
 } from "./ui/command";
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import api from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { Input } from "./ui/input";
