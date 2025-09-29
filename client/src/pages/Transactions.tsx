@@ -317,6 +317,7 @@ const Transactions = () => {
               <Label htmlFor="description">Transaction description</Label>
               <Input
                 type="text"
+                maxLength={30}
                 id="description"
                 placeholder="Transaction description"
                 required

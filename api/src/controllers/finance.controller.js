@@ -571,3 +571,14 @@ export const updateMonthlyBudget = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteMonthlyBudget = async (req, res, next) => {
+  try {
+    const {id} = req.params;
+    const deleted = await Budget.findByIdAndDelete(id);
+    if (!deleted) return next(errorHandler(404, "Monthly budget not found."));
+    return res.status(200).json({message: "Monthly budget deleted!"});
+  } catch (error) {
+    next(error);
+  }
+}

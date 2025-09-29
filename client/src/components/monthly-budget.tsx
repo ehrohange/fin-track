@@ -1,4 +1,10 @@
-import { BanknoteX, CalendarIcon, Loader2, SaveIcon } from "lucide-react";
+import {
+  BanknoteX,
+  CalendarIcon,
+  Loader2,
+  SaveIcon,
+  Trash,
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardTitle } from "./ui/card";
 import {
   Dialog,
@@ -12,11 +18,18 @@ import { Progress } from "./ui/progress";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type MouseEvent,
+} from "react";
 import api from "@/lib/axios";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import {
+  deleteMonthlyBudget,
   setMonthlyBudget,
   updateMonthlyBudget,
 } from "@/redux/budget/MonthlyBudgetSlice";
@@ -24,8 +37,23 @@ import { toast } from "sonner";
 import ToastContent from "./toastcontent";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import type { MonthlyBudgetInterface } from "@/lib/types-index";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 
-const MonthlyBudget = () => {
+interface MonthlyBudgetPropsInterface {
+  formatPeso: (amount: number) => string;
+}
+
+const MonthlyBudget = ({ formatPeso }: MonthlyBudgetPropsInterface) => {
   const [processing, setProcessing] = useState<boolean>(false);
   const [percentage, setPercentage] = useState<number>(0);
   const [open, setOpen] = useState<boolean>(false);
@@ -99,11 +127,6 @@ const MonthlyBudget = () => {
 
   const handleSaveBudget = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Sending budget request", {
-      amountLimit,
-      monthlyBudget,
-      userId,
-    });
     try {
       setProcessing(true);
       if (monthlyBudget !== null) {
@@ -150,6 +173,58 @@ const MonthlyBudget = () => {
     setAmountLimit(parseFloat(e.target.value));
   };
 
+  const handleDeleteMonthlyBudget = async (
+    e: MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    try {
+      setProcessing(true);
+      if (monthlyBudget === null || !monthlyBudget._id) {
+        toast(
+          <ToastContent icon="error" message="No monthly budget to delete." />
+        );
+        setProcessing(false);
+        return;
+      }
+      const res = await api.delete(`/finance/budget/${monthlyBudget._id}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      dispatch(deleteMonthlyBudget());
+      setAmountLimit(0);
+      toast(
+        <ToastContent
+          icon="success"
+          message={res.data.message || "Monthly expenses budget deleted!"}
+        />
+      );
+      setProcessing(false);
+      setOpen(false);
+    } catch (error: any) {
+      if (error.response.status === 429) {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Too many requests! Please try again later."
+          />
+        );
+      } else if (error.response.status === 404) {
+        toast(
+          <ToastContent icon="error" message="Monthly budget not found." />
+        );
+      } else {
+        toast(
+          <ToastContent
+            icon="error"
+            message="Error deleting monthly budget. Please try again."
+          />
+        );
+      }
+      setProcessing(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -184,7 +259,8 @@ const MonthlyBudget = () => {
               <div className="w-full h-6 relative">
                 <div className="absolute h-full w-full flex items-center justify-center text-xs mb-2 z-10">
                   <h1>
-                    {monthlyBudget.amount} out of {monthlyBudget.amountLimit}
+                    {formatPeso(monthlyBudget.amount || 0)} out of{" "}
+                    {formatPeso(monthlyBudget.amountLimit)}
                   </h1>
                 </div>
                 <Progress
@@ -234,17 +310,63 @@ const MonthlyBudget = () => {
               max={1000000000}
             />
           </div>
-          <Button type="submit" disabled={processing}>
-            {!processing ? (
-              <>
-                <SaveIcon /> Save Monthly Budget
-              </>
-            ) : (
-              <>
-                <Loader2 className="animate-spin" /> Saving...
-              </>
-            )}
-          </Button>
+          <div className="w-full flex items-center gap-2">
+            <Button type="submit" className="flex-grow" disabled={processing}>
+              {!processing ? (
+                <>
+                  <SaveIcon /> Save Monthly Budget
+                </>
+              ) : (
+                <>
+                  <Loader2 className="animate-spin" /> Saving...
+                </>
+              )}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className="text-destructive !bg-destructive/10 !border-destructive/60 
+                hover:!bg-destructive/60 hover:text-white/80"
+                >
+                  {!processing ? (
+                    <Trash />
+                  ) : (
+                    <Loader2 className="animate-spin" />
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are you sure you want to delete your monthly goal?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone, but you can still set it up
+                    after deleting.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive/80 hover:bg-destructive cursor-pointer"
+                    disabled={processing}
+                    onClick={handleDeleteMonthlyBudget}
+                  >
+                    {!processing ? (
+                      <>Continue</>
+                    ) : (
+                      <>
+                        <Loader2 className="animate-spin" /> Deleting...
+                      </>
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

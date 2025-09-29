@@ -6,6 +6,8 @@ import { connectDB } from "./config/db.js";
 import userRoutes from "./routes/user.routes.js"
 import authRoutes from "./routes/auth.routes.js"
 import financeRoutes from "./routes/finance.routes.js"
+import feedbackRoutes from "./routes/feedback.routes.js"
+
 
 dotenv.config();
 
@@ -24,6 +26,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

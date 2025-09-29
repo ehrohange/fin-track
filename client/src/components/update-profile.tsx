@@ -192,6 +192,7 @@ const UpdateProfile = () => {
               <Input
                 id="fullName"
                 type="text"
+                maxLength={60}
                 placeholder="Full Name"
                 autoComplete="off"
                 onChange={handleChange}

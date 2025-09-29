@@ -132,6 +132,7 @@ const UpdatePassword = () => {
               <Input
                 id="newPassword"
                 type="password"
+                maxLength={30}
                 placeholder="New Password"
                 autoComplete="new-password"
                 required
@@ -144,6 +145,7 @@ const UpdatePassword = () => {
               <Input
                 id="confirmNewPassword"
                 type="password"
+                maxLength={30}
                 placeholder="Confirm New Password"
                 autoComplete="new-password"
                 required

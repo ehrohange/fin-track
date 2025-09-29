@@ -535,7 +535,7 @@ const Dashboard = () => {
                   </h1>
                 </div>
                 <div className="grid md:grid-cols-2">
-                  <MonthlyBudget />
+                  <MonthlyBudget formatPeso={formatCompactPeso} />
                 </div>
               </div>
             </div>

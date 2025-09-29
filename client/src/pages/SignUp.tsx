@@ -182,6 +182,7 @@ const SignUp = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
+                maxLength={60}
                   id="email"
                   placeholder="Email"
                   value={formData.email}
@@ -193,6 +194,7 @@ const SignUp = () => {
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   type="text"
+                maxLength={60}
                   id="fullName"
                   placeholder="First Name"
                   value={formData.fullName}
@@ -205,6 +207,7 @@ const SignUp = () => {
                 <Input
                   type="password"
                   id="password"
+                maxLength={30}
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -216,6 +219,7 @@ const SignUp = () => {
                 <Input
                   type="password"
                   id="confirmPassword"
+                maxLength={30}
                   placeholder="Password"
                   value={confirmPassword}
                   onChange={handleConfirmPasswordChange}

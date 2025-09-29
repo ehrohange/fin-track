@@ -207,7 +207,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
       <DialogContent>
         <DialogHeader>
           <div className="flex items-start gap-4">
-            <div className="size-12 bg-primary/50 rounded-sm flex items-center justify-center">
+            <div className="min-w-12 min-h-12 bg-primary/50 rounded-sm flex items-center justify-center">
               <GoalIcon />
             </div>
             <div className="grid gap-2 pt-[2px] text-left">
@@ -227,6 +227,7 @@ const AddSavingGoal = ({ small }: AddSavingGoalProps) => {
               <Label>Saving Goal Name</Label>
               <Input
                 type="text"
+                maxLength={30}
                 placeholder="Saving Goal Name"
                 id="goalName"
                 value={formData.goalName}

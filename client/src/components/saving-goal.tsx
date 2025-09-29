@@ -404,7 +404,7 @@ const SavingGoal = ({
         <DialogHeader>
           <div className="flex items-start gap-4">
             <div
-              className={`size-12 ${
+              className={`min-w-12 min-h-12 ${
                 isPastDeadline ? "bg-destructive/40" : "bg-primary/40"
               } rounded-sm flex items-center justify-center`}
             >

@@ -157,6 +157,7 @@ const Login = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
+                  maxLength={60}
                   id="email"
                   placeholder="Email"
                   onChange={handleChange}
@@ -168,6 +169,7 @@ const Login = () => {
                 <Label htmlFor="password">Password</Label>
                 <Input
                   type="password"
+                  maxLength={30}
                   id="password"
                   placeholder="Password"
                   onChange={handleChange}
