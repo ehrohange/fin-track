@@ -15,14 +15,18 @@ import type { User } from "@/lib/types-index";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
 import { setCategories } from "@/redux/categories/categoriesSlice";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const OAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const signIn = useSignIn();
+      const [processing, setProcessing] = useState<boolean>(false);
 
   const handleGoogleLogin = async () => {
     try {
+      setProcessing(true);
       const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
       const result = await signInWithPopup(auth, provider);
@@ -60,6 +64,7 @@ const OAuth = () => {
           toast(
             <ToastContent icon="success" message="Logged in with Google!" />
           );
+          setProcessing(false);
           navigate("/dashboard");
         }
       }
@@ -80,6 +85,7 @@ const OAuth = () => {
         );
       }
       dispatch(loginFailure(error.message));
+      setProcessing(false);
     }
   };
 
@@ -89,8 +95,13 @@ const OAuth = () => {
       onClick={handleGoogleLogin}
       className="w-full"
       variant="outline"
+      disabled={processing}
     >
-      Continue with Google
+      {
+        !processing ? "Continue with Google" : (<>
+        <Loader2 className="animate-spin" /> Logging you in...
+        </>)
+      }
     </Button>
   );
 };
