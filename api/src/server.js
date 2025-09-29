@@ -15,11 +15,10 @@ const app = express();
 
 const PORT = process.env.PORT;
 
-app.use(
-    cors({
-      origin: "http://localhost:5173", // Allow requests from this origin
-    })
-  );
+app.use(cors({
+  origin: ["http://localhost:5173", process.env.CLIENT_BASE_URL],
+  credentials: true,
+}));
 
 app.use(express.json());
 
