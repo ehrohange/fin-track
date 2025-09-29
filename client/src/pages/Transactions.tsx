@@ -147,6 +147,7 @@ const Transactions = () => {
     try {
       setProcessing(true);
       if (!formData.amount || !value || !formData.description) {
+        setProcessing(false);
         return toast(
           <ToastContent icon="error" message="All fields are required." />
         );

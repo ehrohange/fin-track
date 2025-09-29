@@ -14,6 +14,7 @@ import { jwtDecode } from "jwt-decode";
 import type { User } from "@/lib/types-index";
 import { toast } from "sonner";
 import ToastContent from "@/components/toastcontent";
+import { setCategories } from "@/redux/categories/categoriesSlice";
 
 const OAuth = () => {
   const dispatch = useDispatch();
@@ -49,6 +50,11 @@ const OAuth = () => {
 
         if (success) {
           const decodedUser: User = jwtDecode(data.access_token);
+          
+
+          const res = await api.get(`/finance/categories`);
+          dispatch(setCategories(res.data.categories));
+
           dispatch(loginSuccess(decodedUser));
 
           toast(
