@@ -66,6 +66,7 @@ import AddSavingGoal from "@/components/add-saving-goal";
 import SavingGoal from "@/components/saving-goal";
 import { addTransaction } from "@/redux/transaction/transactionsSlice";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import { updateGoal } from "@/redux/goal/goalsSlice";
 
 const Transactions = () => {
   const [open, setOpen] = useState(false);
@@ -111,10 +112,25 @@ const Transactions = () => {
     (state: any) => state.transactionDate.currentSelectedDate
   );
 
-  // ✅ initial value: today
+  const isSameDay = (d1: Date, d2: Date) => {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  };
+
+  // ✅ initial value: today (with logic for currentDate)
   const [date, setDate] = useState<Date | undefined>(() => {
-    return currentDate ? new Date(currentDate) : new Date();
+    if (!currentDate) return new Date();
+
+    const parsed = new Date(currentDate);
+    if (isSameDay(parsed, new Date())) {
+      return new Date(); // use current time
+    }
+    return parsed; // keep provided date
   });
+
   const [formData, setFormData] = useState({
     description: "",
     amount: null,
@@ -140,7 +156,7 @@ const Transactions = () => {
       [id]: id === "amount" ? parseFloat(value) || 0 : value,
     });
   };
-
+  
   const handleAddTransaction = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -157,7 +173,7 @@ const Transactions = () => {
         `/finance/transaction/${currentUser._id}/${value}`,
         {
           ...formData,
-          date: formatDate(date), // backend expects "Aug 30 2025"
+          date: date?.toISOString(),
         },
         {
           headers: {
@@ -167,6 +183,10 @@ const Transactions = () => {
       );
 
       dispatch(addTransaction(res.data.transaction));
+
+      if (res.data.updatedGoal) {
+        dispatch(updateGoal(res.data.updatedGoal));
+      }
 
       toast(<ToastContent icon="success" message={res.data.message} />);
 
@@ -196,7 +216,12 @@ const Transactions = () => {
 
   useEffect(() => {
     if (currentDate) {
-      setDate(new Date(currentDate));
+      const parsed = new Date(currentDate);
+      if (isSameDay(parsed, new Date())) {
+        setDate(new Date()); // update to current time if today
+      } else {
+        setDate(parsed);
+      }
     }
   }, [currentDate]);
 
@@ -227,8 +252,10 @@ const Transactions = () => {
   const filteredCategories = categories.filter((c) => c.type === tab);
 
   return (
-    <div className="min-h-[calc(100vh-68px)] w-full flex flex-col justify-baseline items-start
-    lg:items-center px-4 py-6 lg:min-h-0 lg:flex-grow animate-in fade-in animation-duration-[1s]">
+    <div
+      className="min-h-[calc(100vh-68px)] w-full flex flex-col justify-baseline items-start
+    lg:items-center px-4 py-6 lg:min-h-0 lg:flex-grow animate-in fade-in animation-duration-[1s]"
+    >
       <section className="w-full max-w-6xl grid">
         <Breadcrumb className="mb-4">
           <BreadcrumbList>

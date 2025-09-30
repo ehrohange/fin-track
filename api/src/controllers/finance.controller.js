@@ -85,21 +85,27 @@ export const createTransaction = async (req, res, next) => {
       date: parsedDate,
     });
 
-    await Goal.findOneAndUpdate(
+    console.log(date);
+    const updatedGoal = await Goal.findOneAndUpdate(
       {
         goalName: description,
         categoryId,
         userId,
         active: true,
+        goalStartDate: { $lte: date },
+        goalDeadline: { $gte: date },
       },
-      { $inc: { amount: amount } }
-    );
-
+      { $inc: { amount } },
+      { new: true }
+    )
+      .populate("categoryId", "name type color")
+      .lean();
+    console.log(updatedGoal);
+    // Populate transaction
     const populatedTransaction = await Transaction.findById(transaction._id)
       .populate("categoryId", "name type color")
-      .lean(); // return a plain JS object instead of a Mongoose doc
+      .lean();
 
-    // Format date into "Aug 30 2025"
     if (populatedTransaction.date) {
       populatedTransaction.date = new Date(
         populatedTransaction.date
@@ -110,7 +116,39 @@ export const createTransaction = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({
+    if (updatedGoal) {
+      if (updatedGoal.goalStartDate) {
+        updatedGoal.goalStartDate = new Date(
+          updatedGoal.goalStartDate
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      if (updatedGoal.goalDeadline) {
+        updatedGoal.goalDeadline = new Date(
+          updatedGoal.goalDeadline
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+      }
+
+
+      console.log(updatedGoal)
+      // ✅ Return both
+      return res.status(201).json({
+        message: "Transaction created and goal updated!",
+        transaction: populatedTransaction,
+        updatedGoal,
+      });
+    }
+
+    // ✅ Return only transaction if no goal matched
+    return res.status(201).json({
       message: "Transaction created successfully!",
       transaction: populatedTransaction,
     });
@@ -177,7 +215,15 @@ export const deleteTransaction = async (req, res, next) => {
     // Find transaction first
     const transaction = await Transaction.findById(transactionId);
     if (!transaction) return next(errorHandler(404, "Transaction not found."));
-
+    console.log("Transaction.date:", transaction.date);
+    console.log("Goal query:", {
+      goalName: transaction.description,
+      categoryId: transaction.categoryId,
+      userId: transaction.userId,
+      active: true,
+      goalStartDate: { $lte: transaction.date },
+      goalDeadline: { $gte: transaction.date },
+    });
     // Find matching goal
     const goal = await Goal.findOne({
       goalName: transaction.description,
@@ -574,11 +620,11 @@ export const updateMonthlyBudget = async (req, res, next) => {
 
 export const deleteMonthlyBudget = async (req, res, next) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const deleted = await Budget.findByIdAndDelete(id);
     if (!deleted) return next(errorHandler(404, "Monthly budget not found."));
-    return res.status(200).json({message: "Monthly budget deleted!"});
+    return res.status(200).json({ message: "Monthly budget deleted!" });
   } catch (error) {
     next(error);
   }
-}
+};

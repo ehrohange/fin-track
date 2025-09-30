@@ -232,7 +232,7 @@ const SavingGoal = ({
         `/finance/transaction/${currentUser?._id}/${goal.categoryId._id}`,
         {
           ...formData,
-          date: formatDate(today),
+          date: today.toISOString(),
         },
         {
           headers: {
