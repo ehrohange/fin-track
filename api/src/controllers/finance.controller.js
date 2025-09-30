@@ -85,7 +85,6 @@ export const createTransaction = async (req, res, next) => {
       date: parsedDate,
     });
 
-    console.log(date);
     const updatedGoal = await Goal.findOneAndUpdate(
       {
         goalName: description,
@@ -100,7 +99,6 @@ export const createTransaction = async (req, res, next) => {
     )
       .populate("categoryId", "name type color")
       .lean();
-    console.log(updatedGoal);
     // Populate transaction
     const populatedTransaction = await Transaction.findById(transaction._id)
       .populate("categoryId", "name type color")
@@ -138,7 +136,6 @@ export const createTransaction = async (req, res, next) => {
       }
 
 
-      console.log(updatedGoal)
       // ✅ Return both
       return res.status(201).json({
         message: "Transaction created and goal updated!",
@@ -215,15 +212,6 @@ export const deleteTransaction = async (req, res, next) => {
     // Find transaction first
     const transaction = await Transaction.findById(transactionId);
     if (!transaction) return next(errorHandler(404, "Transaction not found."));
-    console.log("Transaction.date:", transaction.date);
-    console.log("Goal query:", {
-      goalName: transaction.description,
-      categoryId: transaction.categoryId,
-      userId: transaction.userId,
-      active: true,
-      goalStartDate: { $lte: transaction.date },
-      goalDeadline: { $gte: transaction.date },
-    });
     // Find matching goal
     const goal = await Goal.findOne({
       goalName: transaction.description,
