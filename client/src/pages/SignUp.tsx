@@ -26,6 +26,7 @@ import {
 import OAuth from "@/components/oauth";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { setCategories } from "@/redux/categories/categoriesSlice";
 
 const SignUp = () => {
   useGSAP(() => {
@@ -116,6 +117,8 @@ const SignUp = () => {
               exp: decodedUser.exp,
               // add other properties if your User type requires them
             };
+            const res = await api.get(`/finance/categories`);
+            dispatch(setCategories(res.data.categories));
             dispatch(loginSuccess(user));
 
             toast(
@@ -182,7 +185,7 @@ const SignUp = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
-                maxLength={60}
+                  maxLength={60}
                   id="email"
                   placeholder="Email"
                   value={formData.email}
@@ -194,7 +197,7 @@ const SignUp = () => {
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   type="text"
-                maxLength={60}
+                  maxLength={60}
                   id="fullName"
                   placeholder="First Name"
                   value={formData.fullName}
@@ -207,7 +210,7 @@ const SignUp = () => {
                 <Input
                   type="password"
                   id="password"
-                maxLength={30}
+                  maxLength={30}
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -219,7 +222,7 @@ const SignUp = () => {
                 <Input
                   type="password"
                   id="confirmPassword"
-                maxLength={30}
+                  maxLength={30}
                   placeholder="Password"
                   value={confirmPassword}
                   onChange={handleConfirmPasswordChange}
