@@ -17,6 +17,7 @@ import { resetState } from "./redux/resetActions";
 import HomeAndLoginRoutes from "./routes/HomeAndLoginRoutes";
 import Transactions from "./pages/Transactions";
 import Goals from "./pages/Goals";
+import Error404 from "./pages/Error404";
 
 interface JwtPayload {
   exp?: number;
@@ -65,6 +66,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
           </Route>
+          <Route path="*" element={<Error404 />} />
         </Routes>
         <Footer />
       </div>
