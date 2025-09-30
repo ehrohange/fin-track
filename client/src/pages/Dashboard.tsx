@@ -202,7 +202,7 @@ const Dashboard = () => {
           (a: Transaction, b: Transaction) =>
             new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-        console.log(sorted)
+        
         dispatch(setTransactions(sorted));
       } catch (error: any) {
         if (error.response.status === 429) {
