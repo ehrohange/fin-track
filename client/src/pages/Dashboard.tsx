@@ -154,7 +154,7 @@ const Dashboard = () => {
   const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
-  const [period, setPeriod] = useState<string>("month");
+  const [period, setPeriod] = useState<string>("year");
 
   const filterTransactions = (period: string, transactions: Transaction[]) => {
     const now = new Date();
